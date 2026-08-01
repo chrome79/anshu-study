@@ -28,7 +28,17 @@ const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G"
 const DEAD_LINK = "https://m-store-chi.vercel.app";
 
 /** Tokens that must survive the branding rewrite (hostnames, attribute names). */
-const PROTECTED = ["pwmarco.pages.dev", "data-pw-marco", "pw-marco="];
+const PROTECTED = [
+  "pwmarco.pages.dev",
+  "data-pw-marco",
+  "pw-marco=",
+  "marco-magic-loader",
+  "marco_cached",
+  "marcoAuth",
+  "marcoWelcome",
+  "marcoBrainix",
+];
+
 
 function protect(input: string): { text: string; restore: (s: string) => string } {
   let text = input;
