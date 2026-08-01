@@ -233,6 +233,26 @@ const GUARD_SCRIPT = `<script>(function(){try{
       var dead=document.querySelectorAll('a[href*="m-store-chi"]');
       for(var d=0;d<dead.length;d++)dead[d].setAttribute('data-sx-menu-hidden','1');
 
+      // instagram-labelled links must go to instagram, not telegram
+      var as=document.querySelectorAll('a');
+      for(var ia=0;ia<as.length;ia++){
+        var an=as[ia];
+        var lt=(an.textContent||'')+' '+(an.getAttribute('aria-label')||'')+' '+(an.getAttribute('title')||'');
+        if(!/instagram/i.test(lt))continue;
+        var hr=an.getAttribute('href')||'';
+        if(/t\\.me|telegram/i.test(hr)){an.setAttribute('href','${DEV_INSTAGRAM}');an.setAttribute('target','_blank');}
+      }
+
+      // "Download Link: about:blank" -> developer telegram handle
+      var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
+      var tn;
+      while((tn=walker.nextNode())){
+        if(tn.nodeValue&&tn.nodeValue.indexOf('about:blank')>=0){
+          tn.nodeValue=tn.nodeValue.replace(/about:blank/gi,'t.me/Liee070');
+        }
+      }
+
+
       var rows=findRows(/^about\\s*us$/i).concat(findRows(/^ua[\\s._-]?nexa$/i));
       var pw=document.querySelectorAll('[data-pw-about]');
       for(var p=0;p<pw.length;p++)if(rows.indexOf(pw[p])<0)rows.push(pw[p]);
