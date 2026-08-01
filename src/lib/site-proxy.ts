@@ -69,6 +69,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   (document.head||document.documentElement).appendChild(st);
 
   var NEEDLES=['telegram community','join the channel for latest'];
+  var SKIP={BODY:1,HTML:1,MAIN:1,HEADER:1,FOOTER:1,NAV:1};
   function restoreScroll(){
     try{
       document.body.style.overflow='auto';
@@ -76,26 +77,37 @@ const GUARD_SCRIPT = `<script>(function(){try{
       document.documentElement.style.overflow='auto';
     }catch(e){}
   }
-  function container(el){
-    var node=el,best=el;
-    for(var i=0;i<8&&node&&node.parentElement;i++){
+  function isOverlay(node){
+    if(!node||node.nodeType!==1)return false;
+    if(SKIP[node.tagName])return false;
+    if(node.id==='__next'||node.id==='root'||node.id==='app')return false;
+    var cs=window.getComputedStyle(node);
+    if(cs.position!=='fixed'&&cs.position!=='absolute')return false;
+    var role=(node.getAttribute('role')||'').toLowerCase();
+    var cls=((node.className&&node.className.toString())||'').toLowerCase();
+    var z=parseInt(cs.zIndex,10);
+    return role==='dialog'||(z>=10)||cls.indexOf('modal')>-1||cls.indexOf('dialog')>-1||
+      cls.indexOf('popup')>-1||cls.indexOf('overlay')>-1||cls.indexOf('backdrop')>-1;
+  }
+  /** Nearest overlay-like ancestor (max 3 hops); null when nothing qualifies. */
+  function overlayFor(el){
+    var node=el;
+    for(var i=0;i<4&&node;i++){
+      if(isOverlay(node))return node;
       node=node.parentElement;
-      var tag=node.tagName;
-      if(tag==='BODY'||tag==='HTML'||tag==='MAIN')break;
-      var cs=window.getComputedStyle(node);
-      var cls=((node.className&&node.className.toString())||'').toLowerCase();
-      var role=(node.getAttribute('role')||'').toLowerCase();
-      if(cs.position==='fixed'||cs.position==='absolute'||role==='dialog'||
-         cls.indexOf('modal')>-1||cls.indexOf('dialog')>-1||cls.indexOf('popup')>-1||
-         cls.indexOf('overlay')>-1||cls.indexOf('backdrop')>-1){best=node;}
+      if(!node||SKIP[node.tagName])break;
     }
-    return best;
+    return null;
+  }
+  function hide(el){
+    if(!el||el.getAttribute('data-sx-popup-killed'))return;
+    el.setAttribute('data-sx-popup-killed','1');
+    restoreScroll();
   }
   function kill(){
     try{
-      ['marcoAuthDiv','marcoWelcomeOv'].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el&&el.parentNode)el.parentNode.removeChild(el);
+      ['marcoAuthDiv','marcoWelcomeOv','marcoBrainixPanel'].forEach(function(id){
+        hide(document.getElementById(id));
       });
       var all=document.querySelectorAll('div,section,aside,dialog');
       for(var i=0;i<all.length;i++){
@@ -107,7 +119,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
         for(var j=0;j<NEEDLES.length;j++){if(text.indexOf(NEEDLES[j])>-1){hit=true;break;}}
         if(!hit)continue;
         el.setAttribute('data-sx-seen','1');
-        var target=container(el);
+        var target=overlayFor(el);
+        if(!target)continue;
         var parent=target.parentElement;
         if(parent){
           var sibs=parent.children;
@@ -116,23 +129,24 @@ const GUARD_SCRIPT = `<script>(function(){try{
             if(s===target)continue;
             var scs=window.getComputedStyle(s);
             if((scs.position==='fixed'||scs.position==='absolute')&&!s.textContent.trim()){
-              s.setAttribute('data-sx-popup-killed','1');
+              hide(s);
             }
           }
         }
-        if(target&&target.parentNode){target.parentNode.removeChild(target);}
-        else{el.setAttribute('data-sx-popup-killed','1');}
-        restoreScroll();
+        hide(target);
       }
     }catch(e){}
   }
   if(document.addEventListener)document.addEventListener('DOMContentLoaded',kill);
   try{
-    var mo=new MutationObserver(function(){kill();});
+    var scheduled=false;
+    var mo=new MutationObserver(function(){
+      if(scheduled)return;
+      scheduled=true;
+      setTimeout(function(){scheduled=false;kill();},60);
+    });
     mo.observe(document.documentElement,{childList:true,subtree:true});
   }catch(e){}
-  setInterval(kill,500);
-  kill();
 }catch(e){}})();</script>`;
 
 
