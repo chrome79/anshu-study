@@ -168,7 +168,93 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
     }catch(e){}
   }
-  if(document.addEventListener)document.addEventListener('DOMContentLoaded',kill);
+  var LINKS={
+    'JOIN TELEGRAM':'${JOIN_TELEGRAM}',
+    'WHATSAPP CHANNEL':'${WHATSAPP_CHANNEL}',
+    'TELEGRAM':'${DEV_TELEGRAM}',
+    'INSTAGRAM':'${DEV_INSTAGRAM}'
+  };
+  function setLabel(node,label){
+    var walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT,null);
+    var first=true,n;
+    while((n=walker.nextNode())){
+      if(!n.nodeValue||!n.nodeValue.trim())continue;
+      if(first){n.nodeValue=label;first=false;}else{n.nodeValue='';}
+    }
+    if(first)node.textContent=label;
+  }
+  function makeRow(tpl,label,href){
+    var row=tpl.cloneNode(true);
+    row.removeAttribute('data-sx-menu-hidden');
+    row.setAttribute('data-sx-menu-item',label);
+    setLabel(row,label);
+    if(row.tagName==='A'){row.setAttribute('href',href);row.setAttribute('target','_blank');row.setAttribute('rel','noopener');}
+    row.style.cursor='pointer';
+    row.addEventListener('click',function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      window.open(href,'_blank','noopener');
+    },true);
+    return row;
+  }
+  function isRow(el,re){
+    if(!el||el.getAttribute('data-sx-menu-item'))return false;
+    var t=(el.textContent||'').trim();
+    if(t.length>28)return false;
+    return re.test(t);
+  }
+  function menu(){
+    try{
+      // dead store links
+      var dead=document.querySelectorAll('a[href*="m-store-chi"]');
+      for(var d=0;d<dead.length;d++)dead[d].setAttribute('data-sx-menu-hidden','1');
+
+      var tpl=null;
+      var cand=document.querySelectorAll('a,li,button,div');
+      for(var i=0;i<cand.length;i++){
+        var el=cand[i];
+        if(isRow(el,/^about\\s*us$/i)||isRow(el,/^ua[\\s._-]?nexa$/i)){
+          var inner=el.querySelector('a,li,button');
+          if(inner&&(inner.textContent||'').trim().length<=28)continue;
+          el.setAttribute('data-sx-menu-hidden','1');
+          if(!tpl)tpl=el;
+        }
+      }
+      if(tpl&&tpl.parentElement&&!document.querySelector('[data-sx-menu-item]')){
+        var host=tpl.parentElement;
+        host.appendChild(makeRow(tpl,'JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
+        host.appendChild(makeRow(tpl,'WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
+        var head=document.createElement('div');
+        head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
+        head.textContent='ABOUT DEVELOPER';
+        head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
+        host.appendChild(head);
+        host.appendChild(makeRow(tpl,'TELEGRAM',LINKS['TELEGRAM']));
+        host.appendChild(makeRow(tpl,'INSTAGRAM',LINKS['INSTAGRAM']));
+      }
+
+      // "- back" control next to the hamburger becomes the wordmark
+      var bc=document.querySelectorAll('span,div,button,a,p,h1,h2');
+      for(var b=0;b<bc.length;b++){
+        var e2=bc[b];
+        if(e2.getAttribute('data-sx-wordmark'))continue;
+        var t2=(e2.textContent||'').trim();
+        if(!/^[-–—]?\\s*back$/i.test(t2))continue;
+        if(e2.children.length>1)continue;
+        e2.setAttribute('data-sx-wordmark','1');
+        setLabel(e2,'${BRAND}');
+        e2.style.setProperty('font-size','19px','important');
+        e2.style.setProperty('font-weight','800','important');
+        e2.style.setProperty('letter-spacing','0.5px','important');
+        e2.style.setProperty('white-space','nowrap','important');
+        e2.style.setProperty('overflow','hidden','important');
+        e2.style.setProperty('text-overflow','ellipsis','important');
+        e2.style.setProperty('max-width','62vw','important');
+      }
+    }catch(e){}
+  }
+  function tick(){kill();menu();}
+  if(document.addEventListener)document.addEventListener('DOMContentLoaded',tick);
+
   try{
     var scheduled=false;
     var mo=new MutationObserver(function(){
