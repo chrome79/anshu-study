@@ -183,9 +183,8 @@ export function rewriteLayoutJs(js: string): string {
 
   // Disable popups (auto-shown and button-triggered).
   out = out.split("function showWelcomePopup(){").join("function showWelcomePopup(){ return; ");
-  out = out.split("function handleTelegram(){").join("function handleTelegram(){ return; ");
-  out = out.replace(/\.style\.display\s*=\s*'flex'/g, ".style.display='none'");
-  out = out.replace(/\.style\.display\s*=\s*"flex"/g, '.style.display="none"');
+  // handleTelegram() auto-closes the upstream Telegram popup - keep it working.
+
 
   return rewriteBranding(out);
 }
