@@ -274,10 +274,10 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var img=document.createElement('img');
         img.src='${NEW_LOGO}';
         img.alt='${BRAND}';
-        img.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;margin:0 4px;';
-        e2.appendChild(mk('STUDY'));
+        img.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;margin-right:6px;';
         e2.appendChild(img);
-        e2.appendChild(mk('xANSHU'));
+        e2.appendChild(mk('STUDYxANSHU'));
+
         e2.style.setProperty('display','inline-flex','important');
         e2.style.setProperty('align-items','center','important');
         e2.style.setProperty('font-size','19px','important');
