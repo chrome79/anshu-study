@@ -204,10 +204,11 @@ export function buildRequestHeaders(request: Request, targetOrigin: string): Hea
 async function upstreamFetch(request: Request, targetUrl: string, targetOrigin: string) {
   const method = request.method.toUpperCase();
   const hasBody = method !== "GET" && method !== "HEAD";
+  const body: BodyInit | null = hasBody ? new Uint8Array(await request.arrayBuffer()) : null;
   return fetch(targetUrl, {
     method,
     headers: buildRequestHeaders(request, targetOrigin),
-    body: hasBody ? await request.arrayBuffer() : undefined,
+    body,
     redirect: "manual",
   });
 }
