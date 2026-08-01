@@ -57,26 +57,84 @@ export function rewriteBranding(input: string): string {
 /** Guard script injected into every HTML page as a safety net. */
 const GUARD_SCRIPT = `<script>(function(){try{
   var NOOP=function(){return undefined;};
-  var NAMES=['showLogin','showSignup','initAuth','showWelcomePopup','showTelegramPopup'];
+  var NAMES=['showLogin','showSignup','initAuth','showWelcomePopup'];
   NAMES.forEach(function(n){
     try{
       Object.defineProperty(window,n,{configurable:true,get:function(){return NOOP;},set:function(){}});
     }catch(e){try{window[n]=NOOP;}catch(e2){}}
   });
-  var css='#marcoAuthDiv,#marcoWelcomeOv,#marcoBrainixPanel{display:none!important;visibility:hidden!important;}';
+  var css='#marcoAuthDiv,#marcoWelcomeOv,#marcoBrainixPanel{display:none!important;visibility:hidden!important;}'
+    +'[data-sx-popup-killed]{display:none!important;visibility:hidden!important;}';
   var st=document.createElement('style');st.setAttribute('data-sx-guard','1');st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
-  var kill=function(){
+
+  var NEEDLES=['telegram community','join the channel for latest'];
+  function restoreScroll(){
+    try{
+      document.body.style.overflow='auto';
+      document.body.style.pointerEvents='auto';
+      document.documentElement.style.overflow='auto';
+    }catch(e){}
+  }
+  function container(el){
+    var node=el,best=el;
+    for(var i=0;i<8&&node&&node.parentElement;i++){
+      node=node.parentElement;
+      var tag=node.tagName;
+      if(tag==='BODY'||tag==='HTML'||tag==='MAIN')break;
+      var cs=window.getComputedStyle(node);
+      var cls=((node.className&&node.className.toString())||'').toLowerCase();
+      var role=(node.getAttribute('role')||'').toLowerCase();
+      if(cs.position==='fixed'||cs.position==='absolute'||role==='dialog'||
+         cls.indexOf('modal')>-1||cls.indexOf('dialog')>-1||cls.indexOf('popup')>-1||
+         cls.indexOf('overlay')>-1||cls.indexOf('backdrop')>-1){best=node;}
+    }
+    return best;
+  }
+  function kill(){
     try{
       ['marcoAuthDiv','marcoWelcomeOv'].forEach(function(id){
         var el=document.getElementById(id);
         if(el&&el.parentNode)el.parentNode.removeChild(el);
       });
+      var all=document.querySelectorAll('div,section,aside,dialog');
+      for(var i=0;i<all.length;i++){
+        var el=all[i];
+        if(el.getAttribute('data-sx-seen'))continue;
+        var text=(el.textContent||'').toLowerCase();
+        if(text.length>900)continue;
+        var hit=false;
+        for(var j=0;j<NEEDLES.length;j++){if(text.indexOf(NEEDLES[j])>-1){hit=true;break;}}
+        if(!hit)continue;
+        el.setAttribute('data-sx-seen','1');
+        var target=container(el);
+        var parent=target.parentElement;
+        if(parent){
+          var sibs=parent.children;
+          for(var k=0;k<sibs.length;k++){
+            var s=sibs[k];
+            if(s===target)continue;
+            var scs=window.getComputedStyle(s);
+            if((scs.position==='fixed'||scs.position==='absolute')&&!s.textContent.trim()){
+              s.setAttribute('data-sx-popup-killed','1');
+            }
+          }
+        }
+        if(target&&target.parentNode){target.parentNode.removeChild(target);}
+        else{el.setAttribute('data-sx-popup-killed','1');}
+        restoreScroll();
+      }
     }catch(e){}
-  };
+  }
   if(document.addEventListener)document.addEventListener('DOMContentLoaded',kill);
-  setInterval(kill,600);
+  try{
+    var mo=new MutationObserver(function(){kill();});
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+  }catch(e){}
+  setInterval(kill,500);
+  kill();
 }catch(e){}})();</script>`;
+
 
 /** Rewrites for upstream HTML documents. */
 export function rewriteHtml(html: string): string {
@@ -125,9 +183,8 @@ export function rewriteLayoutJs(js: string): string {
 
   // Disable popups (auto-shown and button-triggered).
   out = out.split("function showWelcomePopup(){").join("function showWelcomePopup(){ return; ");
-  out = out.split("function handleTelegram(){").join("function handleTelegram(){ return; ");
-  out = out.replace(/\.style\.display\s*=\s*'flex'/g, ".style.display='none'");
-  out = out.replace(/\.style\.display\s*=\s*"flex"/g, '.style.display="none"');
+  // handleTelegram() auto-closes the upstream Telegram popup - keep it working.
+
 
   return rewriteBranding(out);
 }
