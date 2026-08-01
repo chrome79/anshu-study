@@ -266,7 +266,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var e2=bc[b];
         if(e2.getAttribute('data-sx-wordmark'))continue;
         var t2=norm(e2);
-        if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2)&&t2!=='${BRAND}')continue;
+        if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2))continue;
         if(e2.children.length>1)continue;
         e2.setAttribute('data-sx-wordmark','1');
         e2.textContent='';
