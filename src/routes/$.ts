@@ -4,7 +4,7 @@ import { handleProxy } from "../lib/site-proxy";
 
 const handler = ({ request }: { request: Request }) => handleProxy(request);
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/$")({
   server: {
     handlers: {
       GET: handler,
