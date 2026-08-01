@@ -79,7 +79,9 @@ export function rewriteBranding(input: string): string {
   // 4. Branding
   out = out.replace(/PW[\s._-]?MARCO/gi, BRAND);
   out = out.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
-  out = out.replace(/\bmarco\b/gi, DEV_NAME);
+  // Bare "marco" in visible copy only - never inside URLs, hostnames or identifiers.
+  out = out.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
+
 
   return restore(out);
 }
