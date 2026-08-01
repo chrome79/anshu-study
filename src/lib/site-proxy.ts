@@ -260,7 +260,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     var mo=new MutationObserver(function(){
       if(scheduled)return;
       scheduled=true;
-      setTimeout(function(){scheduled=false;kill();},60);
+      setTimeout(function(){scheduled=false;tick();},60);
     });
     mo.observe(document.documentElement,{childList:true,subtree:true});
   }catch(e){}
