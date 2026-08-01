@@ -239,6 +239,11 @@ export async function handleProxy(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
+  // Platform/telemetry endpoints must not be forwarded upstream (they 500 there).
+  if (pathname.startsWith("/api/public/")) {
+    return new Response(null, { status: 204 });
+  }
+
   if (pathname === "/__ext/loader.js") {
     return proxyScript(request, `${LOADER_ORIGIN}${LOADER_PATH}${url.search}`, rewriteLoaderJs);
   }
