@@ -95,7 +95,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){try{window[n]=NOOP;}catch(e2){}}
   });
   var css='#marcoAuthDiv,#marcoWelcomeOv,#marcoBrainixPanel{display:none!important;visibility:hidden!important;}'
-    +'[data-sx-popup-killed]{display:none!important;visibility:hidden!important;}';
+    +'[data-sx-popup-killed],[data-sx-menu-hidden]{display:none!important;visibility:hidden!important;}';
   var st=document.createElement('style');st.setAttribute('data-sx-guard','1');st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
 
