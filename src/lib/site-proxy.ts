@@ -70,13 +70,14 @@ export function rewriteBranding(input: string): string {
   // 2. Old developer handles -> new Telegram
   out = out.replace(
     /https?:\/\/(?:www\.)?instagram\.com\/official_marco_22\/?/gi,
-    DEV_TELEGRAM,
+    DEV_INSTAGRAM,
   );
   out = out.replace(/https?:\/\/(?:www\.)?t\.me\/officialmarco22\/?/gi, DEV_TELEGRAM);
   out = out.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
 
-  // 3. Dead store link
-  out = out.split(DEAD_LINK).join("about:blank");
+  // 3. Dead store link -> developer telegram
+  out = out.split(DEAD_LINK).join(DEV_TELEGRAM);
+  out = out.replace(/(Download\s*Link\s*:?\s*)about:blank/gi, "$1t.me/Liee070");
 
   // 4. Branding
   out = out.replace(/PW[\s._-]?MARCO/gi, BRAND);
