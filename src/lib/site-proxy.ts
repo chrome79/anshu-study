@@ -18,6 +18,14 @@ const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const NEW_LOGO = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
 
 const BRAND = "STUDYxANSHU";
+const DEV_NAME = "ANSHU KESHAWAT";
+
+const DEV_TELEGRAM = "https://t.me/Liee070";
+const DEV_INSTAGRAM = "https://www.instagram.com/ansh_u_keshawat?igsh=dXF0NDQ5NGh5cWVs";
+const JOIN_TELEGRAM = "https://t.me/+1YqS8Bxcj5M4OTk1";
+const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G";
+
+const DEAD_LINK = "https://m-store-chi.vercel.app";
 
 /** Tokens that must survive the branding rewrite (hostnames, attribute names). */
 const PROTECTED = ["pwmarco.pages.dev", "data-pw-marco", "pw-marco="];
@@ -47,12 +55,25 @@ export function rewriteBranding(input: string): string {
   // 1. Logo
   out = out.split(OLD_LOGO).join(NEW_LOGO);
 
-  // 2. Branding
+  // 2. Old developer handles -> new Telegram
+  out = out.replace(
+    /https?:\/\/(?:www\.)?instagram\.com\/official_marco_22\/?/gi,
+    DEV_TELEGRAM,
+  );
+  out = out.replace(/https?:\/\/(?:www\.)?t\.me\/officialmarco22\/?/gi, DEV_TELEGRAM);
+  out = out.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
+
+  // 3. Dead store link
+  out = out.split(DEAD_LINK).join("about:blank");
+
+  // 4. Branding
   out = out.replace(/PW[\s._-]?MARCO/gi, BRAND);
-  out = out.replace(/Powered\s+by\s+Marco/gi, `Powered by ${BRAND}`);
+  out = out.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
+  out = out.replace(/\bmarco\b/gi, DEV_NAME);
 
   return restore(out);
 }
+
 
 /** Guard script injected into every HTML page as a safety net. */
 const GUARD_SCRIPT = `<script>(function(){try{
