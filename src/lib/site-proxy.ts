@@ -200,11 +200,31 @@ const GUARD_SCRIPT = `<script>(function(){try{
     },true);
     return row;
   }
-  function isRow(el,re){
-    if(!el||el.getAttribute('data-sx-menu-item'))return false;
-    var t=(el.textContent||'').trim();
-    if(t.length>28)return false;
-    return re.test(t);
+  function norm(el){return ((el&&el.textContent)||'').replace(/\\s+/g,' ').trim();}
+  /** Deepest clickable-ish row whose whole text is the given label. */
+  function findRows(re){
+    var out=[];
+    var cand=document.querySelectorAll('a,button,li,div,span,p');
+    for(var i=0;i<cand.length;i++){
+      var el=cand[i];
+      if(el.getAttribute('data-sx-menu-item'))continue;
+      var t=norm(el);
+      if(!t||t.length>30||!re.test(t))continue;
+      // skip wrappers that contain a deeper element with the exact same text
+      var kids=el.querySelectorAll('a,button,li,div,span,p');
+      var deeper=false;
+      for(var k=0;k<kids.length;k++){if(re.test(norm(kids[k]))){deeper=true;break;}}
+      if(deeper)continue;
+      // climb to the clickable row (anchor/button) if there is one nearby
+      var row=el;
+      for(var j=0;j<4&&row.parentElement;j++){
+        if(row.tagName==='A'||row.tagName==='BUTTON'||row.getAttribute('role')==='button')break;
+        if(norm(row.parentElement)!==t)break;
+        row=row.parentElement;
+      }
+      if(out.indexOf(row)<0)out.push(row);
+    }
+    return out;
   }
   function menu(){
     try{
@@ -212,52 +232,71 @@ const GUARD_SCRIPT = `<script>(function(){try{
       var dead=document.querySelectorAll('a[href*="m-store-chi"]');
       for(var d=0;d<dead.length;d++)dead[d].setAttribute('data-sx-menu-hidden','1');
 
+      var rows=findRows(/^about\\s*us$/i).concat(findRows(/^ua[\\s._-]?nexa$/i));
+      var pw=document.querySelectorAll('[data-pw-about]');
+      for(var p=0;p<pw.length;p++)if(rows.indexOf(pw[p])<0)rows.push(pw[p]);
+
       var tpl=null;
-      var cand=document.querySelectorAll('a,li,button,div');
-      for(var i=0;i<cand.length;i++){
-        var el=cand[i];
-        if(isRow(el,/^about\\s*us$/i)||isRow(el,/^ua[\\s._-]?nexa$/i)){
-          var inner=el.querySelector('a,li,button');
-          if(inner&&(inner.textContent||'').trim().length<=28)continue;
-          el.setAttribute('data-sx-menu-hidden','1');
-          if(!tpl)tpl=el;
-        }
-      }
-      if(tpl&&tpl.parentElement&&!document.querySelector('[data-sx-menu-item]')){
-        var host=tpl.parentElement;
-        host.appendChild(makeRow(tpl,'JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
-        host.appendChild(makeRow(tpl,'WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
-        var head=document.createElement('div');
-        head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
-        head.textContent='ABOUT DEVELOPER';
-        head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
-        host.appendChild(head);
-        host.appendChild(makeRow(tpl,'TELEGRAM',LINKS['TELEGRAM']));
-        host.appendChild(makeRow(tpl,'INSTAGRAM',LINKS['INSTAGRAM']));
+      for(var r=0;r<rows.length;r++){
+        rows[r].setAttribute('data-sx-menu-hidden','1');
+        if(!tpl)tpl=rows[r];
       }
 
-      // "- back" control next to the hamburger becomes the wordmark
+      if(tpl&&tpl.parentElement){
+        var host=tpl.parentElement;
+        var have=host.querySelector('[data-sx-menu-item]');
+        if(!have){
+          var frag=document.createDocumentFragment();
+          frag.appendChild(makeRow(tpl,'JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
+          frag.appendChild(makeRow(tpl,'WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
+          var head=document.createElement('div');
+          head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
+          head.textContent='ABOUT DEVELOPER';
+          head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
+          frag.appendChild(head);
+          frag.appendChild(makeRow(tpl,'TELEGRAM',LINKS['TELEGRAM']));
+          frag.appendChild(makeRow(tpl,'INSTAGRAM',LINKS['INSTAGRAM']));
+          if(tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);else host.appendChild(frag);
+        }
+      }
+
+      // "- back" control next to the hamburger becomes the wordmark + logo
       var bc=document.querySelectorAll('span,div,button,a,p,h1,h2');
       for(var b=0;b<bc.length;b++){
         var e2=bc[b];
         if(e2.getAttribute('data-sx-wordmark'))continue;
-        var t2=(e2.textContent||'').trim();
-        if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2))continue;
+        var t2=norm(e2);
+        if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2)&&t2!=='${BRAND}')continue;
         if(e2.children.length>1)continue;
         e2.setAttribute('data-sx-wordmark','1');
-        setLabel(e2,'${BRAND}');
+        e2.textContent='';
+        var mk=function(txt){var s=document.createElement('span');s.textContent=txt;s.style.cssText='flex:0 0 auto;';return s;};
+        var img=document.createElement('img');
+        img.src='${NEW_LOGO}';
+        img.alt='${BRAND}';
+        img.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;margin:0 4px;';
+        e2.appendChild(mk('STUDY'));
+        e2.appendChild(img);
+        e2.appendChild(mk('xANSHU'));
+        e2.style.setProperty('display','inline-flex','important');
+        e2.style.setProperty('align-items','center','important');
         e2.style.setProperty('font-size','19px','important');
         e2.style.setProperty('font-weight','800','important');
         e2.style.setProperty('letter-spacing','0.5px','important');
         e2.style.setProperty('white-space','nowrap','important');
         e2.style.setProperty('overflow','hidden','important');
-        e2.style.setProperty('text-overflow','ellipsis','important');
-        e2.style.setProperty('max-width','62vw','important');
+        e2.style.setProperty('max-width','70vw','important');
       }
     }catch(e){}
   }
-  function tick(){kill();menu();}
-  if(document.addEventListener)document.addEventListener('DOMContentLoaded',tick);
+  var hydrated=false;
+  function tick(){kill();if(hydrated)menu();}
+  function ready(){hydrated=true;tick();}
+  if(document.addEventListener){
+    document.addEventListener('DOMContentLoaded',tick);
+    window.addEventListener('load',function(){setTimeout(ready,600);});
+    setTimeout(ready,2500);
+  }
 
   try{
     var scheduled=false;
