@@ -260,7 +260,23 @@ const GUARD_SCRIPT = `<script>(function(){try{
         }
       }
 
+      // every logo image (incl. drawer header) uses the new logo
+      var imgs=document.querySelectorAll('img');
+      for(var q=0;q<imgs.length;q++){
+        var im=imgs[q];
+        var src=im.getAttribute('src')||'';
+        if(im.getAttribute('data-sx-logo'))continue;
+        if(src.indexOf('${NEW_LOGO}')>=0){im.setAttribute('data-sx-logo','1');continue;}
+        if(/i\\.ibb\\.co|1000002876|71696247|logo/i.test(src)){
+          im.setAttribute('data-sx-logo','1');
+          im.setAttribute('src','${NEW_LOGO}');
+          im.style.setProperty('border-radius','50%');
+          im.style.setProperty('object-fit','cover');
+        }
+      }
+
       // "- back" control next to the hamburger becomes the wordmark + logo
+
       var bc=document.querySelectorAll('span,div,button,a,p,h1,h2');
       for(var b=0;b<bc.length;b++){
         var e2=bc[b];
@@ -274,10 +290,10 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var img=document.createElement('img');
         img.src='${NEW_LOGO}';
         img.alt='${BRAND}';
-        img.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;margin:0 4px;';
-        e2.appendChild(mk('STUDY'));
+        img.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;margin-right:6px;';
         e2.appendChild(img);
-        e2.appendChild(mk('xANSHU'));
+        e2.appendChild(mk('STUDYxANSHU'));
+
         e2.style.setProperty('display','inline-flex','important');
         e2.style.setProperty('align-items','center','important');
         e2.style.setProperty('font-size','19px','important');
