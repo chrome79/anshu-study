@@ -382,7 +382,18 @@ export function rewriteHtml(html: string): string {
     "/__ext/loader.js",
   );
 
+  // Never let the proxied site frame itself: strip iframes that point back at
+  // this origin or at the upstream host. vid-stream-marco frames stay intact.
+  out = out.replace(/<iframe\b[^>]*>(?:[\s\S]*?<\/iframe>)?/gi, (tag) => {
+    const src = /\ssrc\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1] ?? "";
+    if (!src) return tag;
+    if (/vid-stream-marco/i.test(src)) return tag;
+    if (/pwmarco\.pages\.dev/i.test(src) || /^\/(?!\/)/.test(src)) return "";
+    return tag;
+  });
+
   out = rewriteBranding(out);
+
 
   // Inject the guard as early as possible.
   if (out.includes("</head>")) {
