@@ -58,6 +58,24 @@ function protect(input: string): { text: string; restore: (s: string) => string 
   };
 }
 
+/** Absolute/relative URLs and quoted asset paths - branding must never touch
+ *  the inside of these, or stream/manifest URLs break and video goes black. */
+const URL_LIKE =
+  /(?:https?:)?\/\/[^\s"'`<>()\\]+|\/[A-Za-z0-9_\-./]*\.(?:m3u8|mpd|mp4|m4s|ts|key|webm|json|js|css|png|jpe?g|webp|gif|svg|ico|woff2?)(?:\?[^\s"'`<>]*)?/g;
+
+function protectUrls(input: string): { text: string; restore: (s: string) => string } {
+  const found: string[] = [];
+  const text = input.replace(URL_LIKE, (m) => {
+    found.push(m);
+    return `__SXURL${found.length - 1}__`;
+  });
+  return {
+    text,
+    restore: (s: string) =>
+      s.replace(/__SXURL(\d+)__/g, (_m, i: string) => found[Number(i)] ?? ""),
+  };
+}
+
 /** Logo + branding replacements, applied to any text body. */
 export function rewriteBranding(input: string): string {
   const { text, restore } = protect(input);
@@ -73,21 +91,24 @@ export function rewriteBranding(input: string): string {
     DEV_INSTAGRAM,
   );
   out = out.replace(/https?:\/\/(?:www\.)?t\.me\/officialmarco22\/?/gi, DEV_TELEGRAM);
-  out = out.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
 
   // 3. Dead store link -> developer telegram
   out = out.split(DEAD_LINK).join(DEV_TELEGRAM);
   out = out.replace(/(Download\s*Link\s*:?\s*)about:blank/gi, "$1t.me/Liee070");
 
-  // 4. Branding
-  out = out.replace(/PW[\s._-]?MARCO/gi, BRAND);
-  out = out.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
-  // Bare "marco" in visible copy only - never inside URLs, hostnames or identifiers.
-  out = out.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
-
+  // 4. Branding - visible text only, never inside URLs/asset paths.
+  const urls = protectUrls(out);
+  let body = urls.text;
+  body = body.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
+  body = body.replace(/PW[\s._-]?MARCO/gi, BRAND);
+  body = body.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
+  // Bare "marco" in visible copy only - never inside identifiers.
+  body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
+  out = urls.restore(body);
 
   return restore(out);
 }
+
 
 
 /** Guard script injected into every HTML page as a safety net. */
