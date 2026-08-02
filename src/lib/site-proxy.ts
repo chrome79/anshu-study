@@ -140,8 +140,33 @@ const GUARD_SCRIPT = `<script>(function(){try{
     el.setAttribute('data-sx-popup-killed','1');
     restoreScroll();
   }
+  /** The proxied site itself must never render inside an iframe.
+   *  Only vid-stream-marco frames are allowed to stay embedded. */
+  function frames(){
+    try{
+      var ifr=document.querySelectorAll('iframe');
+      for(var i=0;i<ifr.length;i++){
+        var f=ifr[i];
+        var src=f.getAttribute('src')||f.src||'';
+        if(!src||src==='about:blank')continue;
+        if(/vid-stream-marco/i.test(src))continue;
+        var u;
+        try{u=new URL(src,location.href);}catch(e){continue;}
+        var self=u.hostname===location.hostname||/pwmarco\\.pages\\.dev/i.test(u.hostname);
+        if(!self)continue;
+        f.setAttribute('data-sx-popup-killed','1');
+        // Same-site content belongs at the top level, not in a frame.
+        if(location.pathname+location.search!==u.pathname+u.search){
+          location.replace(u.pathname+u.search+u.hash);
+          return;
+        }
+      }
+    }catch(e){}
+  }
   function kill(){
     try{
+      frames();
+
       ['marcoAuthDiv','marcoWelcomeOv','marcoBrainixPanel'].forEach(function(id){
         hide(document.getElementById(id));
       });
