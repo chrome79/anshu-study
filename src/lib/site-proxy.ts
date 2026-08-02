@@ -58,6 +58,24 @@ function protect(input: string): { text: string; restore: (s: string) => string 
   };
 }
 
+/** Absolute/relative URLs and quoted asset paths - branding must never touch
+ *  the inside of these, or stream/manifest URLs break and video goes black. */
+const URL_LIKE =
+  /(?:https?:)?\/\/[^\s"'`<>()\\]+|\/[A-Za-z0-9_\-./]*\.(?:m3u8|mpd|mp4|m4s|ts|key|webm|json|js|css|png|jpe?g|webp|gif|svg|ico|woff2?)(?:\?[^\s"'`<>]*)?/g;
+
+function protectUrls(input: string): { text: string; restore: (s: string) => string } {
+  const found: string[] = [];
+  const text = input.replace(URL_LIKE, (m) => {
+    found.push(m);
+    return `__SXURL${found.length - 1}__`;
+  });
+  return {
+    text,
+    restore: (s: string) =>
+      s.replace(/__SXURL(\d+)__/g, (_m, i: string) => found[Number(i)] ?? ""),
+  };
+}
+
 /** Logo + branding replacements, applied to any text body. */
 export function rewriteBranding(input: string): string {
   const { text, restore } = protect(input);
@@ -73,21 +91,24 @@ export function rewriteBranding(input: string): string {
     DEV_INSTAGRAM,
   );
   out = out.replace(/https?:\/\/(?:www\.)?t\.me\/officialmarco22\/?/gi, DEV_TELEGRAM);
-  out = out.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
 
   // 3. Dead store link -> developer telegram
   out = out.split(DEAD_LINK).join(DEV_TELEGRAM);
   out = out.replace(/(Download\s*Link\s*:?\s*)about:blank/gi, "$1t.me/Liee070");
 
-  // 4. Branding
-  out = out.replace(/PW[\s._-]?MARCO/gi, BRAND);
-  out = out.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
-  // Bare "marco" in visible copy only - never inside URLs, hostnames or identifiers.
-  out = out.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
-
+  // 4. Branding - visible text only, never inside URLs/asset paths.
+  const urls = protectUrls(out);
+  let body = urls.text;
+  body = body.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
+  body = body.replace(/PW[\s._-]?MARCO/gi, BRAND);
+  body = body.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
+  // Bare "marco" in visible copy only - never inside identifiers.
+  body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
+  out = urls.restore(body);
 
   return restore(out);
 }
+
 
 
 /** Guard script injected into every HTML page as a safety net. */
@@ -140,8 +161,37 @@ const GUARD_SCRIPT = `<script>(function(){try{
     el.setAttribute('data-sx-popup-killed','1');
     restoreScroll();
   }
-  /** The proxied site itself must never render inside an iframe.
-   *  Only vid-stream-marco frames are allowed to stay embedded. */
+  /** Video frames must always play. Only true self-framing loops (this exact
+   *  page embedded in itself) get unwrapped; everything else is left alone and
+   *  falls back to a direct redirect when the embed refuses to load. */
+  var VIDEOISH=/vid-stream|player|stream|embed|video|\\.m3u8|\\.mpd|\\.mp4|drm|watch/i;
+  function fallbackTo(url){
+    try{
+      if(window.__sxRedirected)return;
+      window.__sxRedirected=true;
+      window.top.location.href=url;
+    }catch(e){try{location.href=url;}catch(e2){}}
+  }
+  function armPlayer(f,abs){
+    if(f.getAttribute('data-sx-player'))return;
+    f.setAttribute('data-sx-player','1');
+    // Give the embed every permission it may need.
+    try{
+      f.removeAttribute('sandbox');
+      f.setAttribute('allow','autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write');
+      f.setAttribute('allowfullscreen','true');
+      f.setAttribute('referrerpolicy','no-referrer-when-downgrade');
+      f.style.setProperty('background','#000');
+    }catch(e){}
+    var loaded=false;
+    f.addEventListener('load',function(){loaded=true;});
+    f.addEventListener('error',function(){fallbackTo(abs);});
+    // Blocked embeds (X-Frame-Options / CSP) never fire load -> redirect instead.
+    setTimeout(function(){
+      if(loaded||!f.isConnected)return;
+      fallbackTo(abs);
+    },7000);
+  }
   function frames(){
     try{
       var ifr=document.querySelectorAll('iframe');
@@ -149,20 +199,20 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var f=ifr[i];
         var src=f.getAttribute('src')||f.src||'';
         if(!src||src==='about:blank')continue;
-        if(/vid-stream-marco/i.test(src))continue;
         var u;
         try{u=new URL(src,location.href);}catch(e){continue;}
+        var abs=u.href;
+        if(VIDEOISH.test(abs)){armPlayer(f,abs);continue;}
         var self=u.hostname===location.hostname||/pwmarco\\.pages\\.dev/i.test(u.hostname);
         if(!self)continue;
-        f.setAttribute('data-sx-popup-killed','1');
-        // Same-site content belongs at the top level, not in a frame.
-        if(location.pathname+location.search!==u.pathname+u.search){
-          location.replace(u.pathname+u.search+u.hash);
-          return;
+        // Only unwrap a frame that loads this very same page (infinite nesting).
+        if(u.pathname===location.pathname){
+          f.setAttribute('data-sx-popup-killed','1');
         }
       }
     }catch(e){}
   }
+
   function kill(){
     try{
       frames();
@@ -382,15 +432,9 @@ export function rewriteHtml(html: string): string {
     "/__ext/loader.js",
   );
 
-  // Never let the proxied site frame itself: strip iframes that point back at
-  // this origin or at the upstream host. vid-stream-marco frames stay intact.
-  out = out.replace(/<iframe\b[^>]*>(?:[\s\S]*?<\/iframe>)?/gi, (tag) => {
-    const src = /\ssrc\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1] ?? "";
-    if (!src) return tag;
-    if (/vid-stream-marco/i.test(src)) return tag;
-    if (/pwmarco\.pages\.dev/i.test(src) || /^\/(?!\/)/.test(src)) return "";
-    return tag;
-  });
+  // Frames are left intact so lecture players always load; the runtime guard
+  // only unwraps a frame that embeds this very same page.
+
 
   out = rewriteBranding(out);
 
@@ -577,9 +621,14 @@ export async function handleProxy(request: Request): Promise<Response> {
   }
 
   const contentType = upstream.headers.get("content-type");
-  if (!upstream.body || !isTextual(contentType)) {
+  // Streaming manifests/segments must never be rewritten.
+  const isMedia =
+    /\.(m3u8|mpd|ts|m4s|mp4|key|webm|vtt|srt)(?:$|\?)/i.test(pathname) ||
+    /mpegurl|dash\+xml|video\/|audio\/|octet-stream/i.test(contentType ?? "");
+  if (!upstream.body || isMedia || !isTextual(contentType)) {
     return new Response(upstream.body, { status: upstream.status, headers });
   }
+
 
   const text = await upstream.text();
   const ct = (contentType ?? "").toLowerCase();
