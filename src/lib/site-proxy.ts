@@ -621,9 +621,14 @@ export async function handleProxy(request: Request): Promise<Response> {
   }
 
   const contentType = upstream.headers.get("content-type");
-  if (!upstream.body || !isTextual(contentType)) {
+  // Streaming manifests/segments must never be rewritten.
+  const isMedia =
+    /\.(m3u8|mpd|ts|m4s|mp4|key|webm|vtt|srt)(?:$|\?)/i.test(pathname) ||
+    /mpegurl|dash\+xml|video\/|audio\/|octet-stream/i.test(contentType ?? "");
+  if (!upstream.body || isMedia || !isTextual(contentType)) {
     return new Response(upstream.body, { status: upstream.status, headers });
   }
+
 
   const text = await upstream.text();
   const ct = (contentType ?? "").toLowerCase();
