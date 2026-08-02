@@ -161,8 +161,37 @@ const GUARD_SCRIPT = `<script>(function(){try{
     el.setAttribute('data-sx-popup-killed','1');
     restoreScroll();
   }
-  /** The proxied site itself must never render inside an iframe.
-   *  Only vid-stream-marco frames are allowed to stay embedded. */
+  /** Video frames must always play. Only true self-framing loops (this exact
+   *  page embedded in itself) get unwrapped; everything else is left alone and
+   *  falls back to a direct redirect when the embed refuses to load. */
+  var VIDEOISH=/vid-stream|player|stream|embed|video|\\.m3u8|\\.mpd|\\.mp4|drm|watch/i;
+  function fallbackTo(url){
+    try{
+      if(window.__sxRedirected)return;
+      window.__sxRedirected=true;
+      window.top.location.href=url;
+    }catch(e){try{location.href=url;}catch(e2){}}
+  }
+  function armPlayer(f,abs){
+    if(f.getAttribute('data-sx-player'))return;
+    f.setAttribute('data-sx-player','1');
+    // Give the embed every permission it may need.
+    try{
+      f.removeAttribute('sandbox');
+      f.setAttribute('allow','autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write');
+      f.setAttribute('allowfullscreen','true');
+      f.setAttribute('referrerpolicy','no-referrer-when-downgrade');
+      f.style.setProperty('background','#000');
+    }catch(e){}
+    var loaded=false;
+    f.addEventListener('load',function(){loaded=true;});
+    f.addEventListener('error',function(){fallbackTo(abs);});
+    // Blocked embeds (X-Frame-Options / CSP) never fire load -> redirect instead.
+    setTimeout(function(){
+      if(loaded||!f.isConnected)return;
+      fallbackTo(abs);
+    },7000);
+  }
   function frames(){
     try{
       var ifr=document.querySelectorAll('iframe');
@@ -170,20 +199,20 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var f=ifr[i];
         var src=f.getAttribute('src')||f.src||'';
         if(!src||src==='about:blank')continue;
-        if(/vid-stream-marco/i.test(src))continue;
         var u;
         try{u=new URL(src,location.href);}catch(e){continue;}
+        var abs=u.href;
+        if(VIDEOISH.test(abs)){armPlayer(f,abs);continue;}
         var self=u.hostname===location.hostname||/pwmarco\\.pages\\.dev/i.test(u.hostname);
         if(!self)continue;
-        f.setAttribute('data-sx-popup-killed','1');
-        // Same-site content belongs at the top level, not in a frame.
-        if(location.pathname+location.search!==u.pathname+u.search){
-          location.replace(u.pathname+u.search+u.hash);
-          return;
+        // Only unwrap a frame that loads this very same page (infinite nesting).
+        if(u.pathname===location.pathname){
+          f.setAttribute('data-sx-popup-killed','1');
         }
       }
     }catch(e){}
   }
+
   function kill(){
     try{
       frames();
