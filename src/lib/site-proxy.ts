@@ -259,6 +259,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
       for(var i=0;i<all.length;i++){
         var el=all[i];
         if(el.getAttribute('data-sx-seen'))continue;
+        if(el.closest&&el.closest('[data-sx-modal],[data-sx-dock]'))continue;
         var text=(el.textContent||'').toLowerCase();
         if(text.length>900)continue;
         var hit=false;
