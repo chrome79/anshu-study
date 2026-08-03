@@ -85,9 +85,10 @@ export function rewriteBranding(input: string): string {
   const { text, restore } = protect(input);
   let out = text;
 
-  // 1. Logo
+  // 1. Logo - one canonical asset everywhere
   out = out.split(OLD_LOGO).join(NEW_LOGO);
   out = out.split(OLD_LOGO_2).join(NEW_LOGO);
+  out = out.split(OLD_ASSET_LOGO).join(NEW_LOGO);
 
   // 2. Old developer handles -> new Telegram
   out = out.replace(
