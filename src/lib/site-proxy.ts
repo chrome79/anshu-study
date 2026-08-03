@@ -172,6 +172,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     if(!node||node.nodeType!==1)return false;
     if(SKIP[node.tagName])return false;
     if(node.id==='__next'||node.id==='root'||node.id==='app')return false;
+    if(node.getAttribute('data-sx-dock')||node.getAttribute('data-sx-modal'))return false;
     var cs=window.getComputedStyle(node);
     if(cs.position!=='fixed'&&cs.position!=='absolute')return false;
     var role=(node.getAttribute('role')||'').toLowerCase();
