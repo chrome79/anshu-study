@@ -18,9 +18,12 @@ const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const OLD_LOGO_2 = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
 /** Single canonical branding asset. The version query busts client caches. */
 const LOGO_ASSET =
-  "/__l5e/assets-v1/f1a28b72-aaad-41c7-bc31-71c5dec7ebc0/anshu_keshawat_logo_v1_canonical.png";
-const NEW_LOGO = `${LOGO_ASSET}?v=fixed_final_2024`;
+  "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
+const NEW_LOGO = `${LOGO_ASSET}?v=logo_v2`;
 const OLD_ASSET_LOGO = "/__l5e/assets-v1/177cb398-ccee-45ab-b175-857cbd8b6f24/ak-logo.png";
+const OLD_ASSET_LOGO_2 =
+  "/__l5e/assets-v1/f1a28b72-aaad-41c7-bc31-71c5dec7ebc0/anshu_keshawat_logo_v1_canonical.png";
+
 
 const BRAND = "STUDYxANSHU";
 const DEV_NAME = "ANSHU KESHAWAT";
@@ -89,6 +92,7 @@ export function rewriteBranding(input: string): string {
   out = out.split(OLD_LOGO).join(NEW_LOGO);
   out = out.split(OLD_LOGO_2).join(NEW_LOGO);
   out = out.split(OLD_ASSET_LOGO).join(NEW_LOGO);
+  out = out.split(OLD_ASSET_LOGO_2).join(LOGO_ASSET);
 
   // 2. Old developer handles -> new Telegram
   out = out.replace(
@@ -137,11 +141,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-header]>*{min-width:0!important;}'
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
-    +'[data-sx-wordmark] img{width:clamp(28px,9vw,40px)!important;height:clamp(28px,9vw,40px)!important;'
-    +'border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
-    +'[data-sx-xp]{display:inline-flex!important;align-items:center!important;gap:4px!important;flex:0 0 auto!important;'
-    +'padding:4px 10px!important;border-radius:9999px!important;font-size:11px!important;font-weight:700!important;'
-    +'line-height:1!important;white-space:nowrap!important;min-height:0!important;height:auto!important;}'
+    +'[data-sx-wordmark] img,[data-sx-header] img{display:none!important;}'
+    +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
     +'[data-sx-card] p,[data-sx-card] span,[data-sx-card] h1,[data-sx-card] h2,[data-sx-card] h3{overflow-wrap:anywhere!important;line-height:1.5!important;}'
@@ -419,11 +420,6 @@ const GUARD_SCRIPT = `<script>(function(){try{
         e2.setAttribute('data-sx-wordmark','1');
         e2.textContent='';
         var mk=function(txt){var s=document.createElement('span');s.textContent=txt;s.style.cssText='flex:0 1 auto;min-width:0;';return s;};
-        var img=document.createElement('img');
-        img.src='${NEW_LOGO}';
-        img.alt='${BRAND}';
-        img.setAttribute('data-sx-logo','1');
-        e2.appendChild(img);
         e2.appendChild(mk('STUDYxANSHU'));
         e2.style.setProperty('white-space','nowrap','important');
       }
@@ -506,8 +502,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   function welcome(){
     if(window.__sxWelcome)return;
     window.__sxWelcome=true;
-    try{if(sessionStorage.getItem('sx_welcome_seen'))return;}catch(e){}
-    try{try{sessionStorage.setItem('sx_welcome_seen','1');}catch(e){}
+    try{try{sessionStorage.removeItem('sx_welcome_seen');}catch(e){}
       var ov=document.createElement('div');
       ov.setAttribute('data-sx-modal','1');
       ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;'
