@@ -92,6 +92,7 @@ export function rewriteBranding(input: string): string {
   out = out.split(OLD_LOGO).join(NEW_LOGO);
   out = out.split(OLD_LOGO_2).join(NEW_LOGO);
   out = out.split(OLD_ASSET_LOGO).join(NEW_LOGO);
+  out = out.split(OLD_ASSET_LOGO_2).join(LOGO_ASSET);
 
   // 2. Old developer handles -> new Telegram
   out = out.replace(
