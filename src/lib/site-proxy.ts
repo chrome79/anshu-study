@@ -420,11 +420,6 @@ const GUARD_SCRIPT = `<script>(function(){try{
         e2.setAttribute('data-sx-wordmark','1');
         e2.textContent='';
         var mk=function(txt){var s=document.createElement('span');s.textContent=txt;s.style.cssText='flex:0 1 auto;min-width:0;';return s;};
-        var img=document.createElement('img');
-        img.src='${NEW_LOGO}';
-        img.alt='${BRAND}';
-        img.setAttribute('data-sx-logo','1');
-        e2.appendChild(img);
         e2.appendChild(mk('STUDYxANSHU'));
         e2.style.setProperty('white-space','nowrap','important');
       }
