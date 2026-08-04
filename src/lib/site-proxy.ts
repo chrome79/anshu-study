@@ -502,8 +502,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   function welcome(){
     if(window.__sxWelcome)return;
     window.__sxWelcome=true;
-    try{if(sessionStorage.getItem('sx_welcome_seen'))return;}catch(e){}
-    try{try{sessionStorage.setItem('sx_welcome_seen','1');}catch(e){}
+    try{try{sessionStorage.removeItem('sx_welcome_seen');}catch(e){}
       var ov=document.createElement('div');
       ov.setAttribute('data-sx-modal','1');
       ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;'
