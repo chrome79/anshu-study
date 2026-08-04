@@ -574,9 +574,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
         if(left<=0)close();
       },1000);
       card.querySelector('[data-sx-x]').addEventListener('click',close);
-      ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
-      var cta=card.querySelector('[data-sx-cta]');
-      if(cta)cta.addEventListener('click',function(){setTimeout(close,150);});
+      ov.addEventListener('click',function(ev){ev.stopPropagation();});
+
     }catch(e){}
   }
 
