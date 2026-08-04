@@ -18,9 +18,12 @@ const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const OLD_LOGO_2 = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
 /** Single canonical branding asset. The version query busts client caches. */
 const LOGO_ASSET =
-  "/__l5e/assets-v1/f1a28b72-aaad-41c7-bc31-71c5dec7ebc0/anshu_keshawat_logo_v1_canonical.png";
-const NEW_LOGO = `${LOGO_ASSET}?v=fixed_final_2024`;
+  "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
+const NEW_LOGO = `${LOGO_ASSET}?v=logo_v2`;
 const OLD_ASSET_LOGO = "/__l5e/assets-v1/177cb398-ccee-45ab-b175-857cbd8b6f24/ak-logo.png";
+const OLD_ASSET_LOGO_2 =
+  "/__l5e/assets-v1/f1a28b72-aaad-41c7-bc31-71c5dec7ebc0/anshu_keshawat_logo_v1_canonical.png";
+
 
 const BRAND = "STUDYxANSHU";
 const DEV_NAME = "ANSHU KESHAWAT";
