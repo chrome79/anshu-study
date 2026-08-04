@@ -141,7 +141,10 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-header]>*{min-width:0!important;}'
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
-    +'[data-sx-wordmark] img,[data-sx-header] img{display:none!important;}'
+    +'[data-sx-wordmark] img:not([data-sx-brandlogo]),[data-sx-header] img:not([data-sx-brandlogo]){display:none!important;}'
+    +'img[data-sx-brandlogo]{display:inline-block!important;visibility:visible!important;opacity:1!important;'
+    +'width:26px!important;height:26px!important;min-width:26px!important;border-radius:50%!important;object-fit:cover!important;'
+    +'flex:0 0 auto!important;vertical-align:middle!important;margin-right:8px!important;}'
     +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
