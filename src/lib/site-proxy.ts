@@ -467,35 +467,81 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
   }
 
+  /** Put our logo next to the brand name inside the hamburger drawer. */
+  function brandLogo(){
+    try{
+      var cand=document.querySelectorAll('div,span,p,h1,h2,h3,a,li');
+      for(var i=0;i<cand.length;i++){
+        var el=cand[i];
+        if(el.getAttribute('data-sx-brand'))continue;
+        if(el.querySelector&&el.querySelector('img[data-sx-brandlogo]'))continue;
+        var t=norm(el);
+        if(!/^(studyxanshu|study x anshu|anshu keshawat)$/i.test(t))continue;
+        // only the deepest node holding this text
+        var kids=el.querySelectorAll('div,span,p,h1,h2,h3,a,li');
+        var deeper=false;
+        for(var k=0;k<kids.length;k++){if(norm(kids[k])===t){deeper=true;break;}}
+        if(deeper)continue;
+        if(el.closest&&el.closest('[data-sx-header],[data-sx-wordmark],[data-sx-modal]'))continue;
+        el.setAttribute('data-sx-brand','1');
+        var img=document.createElement('img');
+        img.setAttribute('data-sx-brandlogo','1');
+        img.setAttribute('src','${NEW_LOGO}');
+        img.setAttribute('alt','');
+        el.insertBefore(img,el.firstChild);
+        el.style.setProperty('display','flex','important');
+        el.style.setProperty('align-items','center','important');
+      }
+    }catch(e){}
+  }
+
   /** The right-edge drawer toggle must stay visible, tappable and un-clipped. */
   function dock(){
     try{
-      var els=document.querySelectorAll('button,div,a,span');
+      var els=document.querySelectorAll('button,div,a,span,[role="button"]');
       for(var i=0;i<els.length;i++){
         var el=els[i];
         if(el.getAttribute('data-sx-dock'))continue;
+        if(el.closest&&el.closest('[data-sx-dock],[data-sx-modal],[data-sx-header]'))continue;
         var cs=window.getComputedStyle(el);
-        if(cs.position!=='fixed')continue;
+        var pinned=cs.position==='fixed'||cs.position==='sticky';
+        if(!pinned){
+          // absolute inside a fixed/sticky ancestor also counts
+          var a=el.parentElement;
+          for(var m=0;m<4&&a&&a.tagName!=='BODY';m++){
+            var acs=window.getComputedStyle(a);
+            if(acs.position==='fixed'||acs.position==='sticky'){pinned=cs.position==='absolute';break;}
+            a=a.parentElement;
+          }
+        }
+        if(!pinned)continue;
         var r=el.getBoundingClientRect();
-        if(r.width>90||r.height>110||r.width<10||r.height<10)continue;
-        if(r.right<window.innerWidth-24)continue;
+        if(r.width<8||r.height<8||r.width>140||r.height>170)continue;
+        if(r.right<window.innerWidth-80)continue;
         var t=norm(el);
-        if(t.length>2)continue;
-        if(t&&!/[<>‹›«»⟨⟩←→|]/.test(t))continue;
+        var label=((el.getAttribute('aria-label')||'')+' '+(el.className&&el.className.toString?el.className.toString():'')).toLowerCase();
+        var iconish=!t||t.length<=3||el.querySelector('svg,img,i');
+        var named=/toggle|drawer|sidebar|chevron|arrow|handle|panel|open/.test(label);
+        if(!iconish&&!named)continue;
+        if(t&&t.length>3&&!named)continue;
         el.setAttribute('data-sx-dock','1');
-        // Unclip every ancestor so scrolling/hover can never hide it.
+        // Un-clip ancestors in place; never re-parent (that breaks React's DOM).
         var p=el.parentElement;
         for(var j=0;j<8&&p&&p.tagName!=='BODY';j++){
           var pcs=window.getComputedStyle(p);
           if(pcs.overflow!=='visible'||pcs.overflowX!=='visible'||pcs.overflowY!=='visible'){
-            try{document.body.appendChild(el);}catch(e2){}
-            break;
+            p.style.setProperty('overflow','visible','important');
           }
+          if(pcs.transform&&pcs.transform!=='none')p.style.setProperty('transform','none','important');
+          if(pcs.filter&&pcs.filter!=='none')p.style.setProperty('filter','none','important');
+          if(pcs.contain&&pcs.contain!=='none')p.style.setProperty('contain','none','important');
+          if(parseFloat(pcs.opacity)<1)p.style.setProperty('opacity','1','important');
           p=p.parentElement;
         }
       }
     }catch(e){}
   }
+
 
   /** Welcome announcement modal - injected, outside the React tree. */
   var FEATURES=['Live Classes, all batches','Recorded Lectures, full access',
