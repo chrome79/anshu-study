@@ -1,4 +1,4 @@
-# Fix: logo next to the name, and missing hamburger menu options
+- Fix: logo next to the name, and missing hamburger menu options
 
 ## What I checked in `src/lib/site-proxy.ts`
 
@@ -16,7 +16,7 @@
 
 - Add drawer detection independent of the `About us` row: find the open drawer/panel (`[role="dialog"]`, `aside`, `nav`, or a fixed/absolute panel that contains the menu rows such as `My Batches` / `Settings` / `Logout`) and treat its scrollable list as the insertion host.
 - Insertion order of preference: (a) clone an existing real menu row as template so styling matches; (b) if no clone target exists, build rows from scratch with padding/font/colour matching the neighbouring rows.
-- Keep hiding `About us` / `UA-NEXA` / `[data-pw-about]` when present, but no longer make insertion conditional on finding them.
+- Keep hiding `UA-NEXA` / `[data-pw-about]` when present, but no longer make insertion conditional on finding them.
 - Re-check on every observer tick: if the drawer re-mounts, insert again. Idempotency is keyed on the rows existing **inside the current drawer**, not a global query.
 - Labels and links stay exactly as before: `JOIN TELEGRAM`, `WHATSAPP CHANNEL`, then an `ABOUT DEVELOPER` heading, then `TELEGRAM` and `INSTAGRAM`, each opening in a new tab.
 
