@@ -480,11 +480,24 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
-      // hide the legacy rows when present (never a precondition for insertion)
+      // hide the legacy UA-NEXA row only; "About us" stays visible
       var rows=findRows(/^ua[\\s._-]?nexa$/i);
-      var pw=document.querySelectorAll('[data-pw-about]');
-      for(var p=0;p<pw.length;p++)if(rows.indexOf(pw[p])<0)rows.push(pw[p]);
       for(var r=0;r<rows.length;r++)rows[r].setAttribute('data-sx-menu-hidden','1');
+
+      // restore "About us" (was hidden earlier) and give it its own icon
+      var pw=document.querySelectorAll('[data-pw-about]');
+      for(var p=0;p<pw.length;p++){
+        var ab=pw[p];
+        if(/^ua[\\s._-]?nexa$/i.test(norm(ab)))continue;
+        ab.removeAttribute('data-sx-menu-hidden');
+        if(!ab.querySelector('[data-sx-menu-icon]'))setIcon(ab,'About us');
+      }
+      var abs=findRows(/^about\\s*us$/i);
+      for(var q2=0;q2<abs.length;q2++){
+        abs[q2].removeAttribute('data-sx-menu-hidden');
+        if(!abs[q2].querySelector('[data-sx-menu-icon]'))setIcon(abs[q2],'About us');
+      }
+
 
       injectMenuRows();
 
