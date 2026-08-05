@@ -286,11 +286,48 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
   }
   var LINKS={
-    'JOIN TELEGRAM':'${JOIN_TELEGRAM}',
-    'WHATSAPP CHANNEL':'${WHATSAPP_CHANNEL}',
-    'TELEGRAM':'${DEV_TELEGRAM}',
-    'INSTAGRAM':'${DEV_INSTAGRAM}'
+    'Join telegram':'${JOIN_TELEGRAM}',
+    'Whatsapp channel':'${WHATSAPP_CHANNEL}',
+    'Telegram':'${DEV_TELEGRAM}',
+    'Instagram':'${DEV_INSTAGRAM}'
   };
+  var SVG='http://www.w3.org/2000/svg';
+  var PATHS={
+    'Join telegram':['M22 2 11 13','M22 2 15 22l-4-9-9-4z'],
+    'Telegram':['M22 2 11 13','M22 2 15 22l-4-9-9-4z'],
+    'Whatsapp channel':['M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.2-5.4A8.4 8.4 0 1 1 21 11.5z'],
+    'Instagram':['M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z','M15.5 11.5a3.5 3.5 0 1 1-3.5-3.5 3.5 3.5 0 0 1 3.5 3.5z','M17.5 6.6h.01'],
+    'About us':['M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18z','M12 11v5','M12 8h.01']
+  };
+  function makeIcon(label){
+    var ps=PATHS[label];if(!ps)return null;
+    var s=document.createElementNS(SVG,'svg');
+    s.setAttribute('viewBox','0 0 24 24');s.setAttribute('fill','none');
+    s.setAttribute('stroke','currentColor');s.setAttribute('stroke-width','1.8');
+    s.setAttribute('stroke-linecap','round');s.setAttribute('stroke-linejoin','round');
+    s.setAttribute('width','22');s.setAttribute('height','22');
+    s.setAttribute('data-sx-menu-icon','1');
+    for(var i=0;i<ps.length;i++){
+      var p=document.createElementNS(SVG,'path');
+      p.setAttribute('d',ps[i]);s.appendChild(p);
+    }
+    return s;
+  }
+  function setIcon(row,label){
+    try{
+      var ic=makeIcon(label);if(!ic)return;
+      var old=row.querySelector('svg,img');
+      if(old&&old.parentNode){
+        if(old.getAttribute&&old.getAttribute('width'))ic.setAttribute('width',old.getAttribute('width'));
+        if(old.getAttribute&&old.getAttribute('height'))ic.setAttribute('height',old.getAttribute('height'));
+        ic.setAttribute('class',old.getAttribute('class')||'');
+        old.parentNode.replaceChild(ic,old);
+      }else{
+        ic.style.cssText='flex:0 0 auto;margin-right:10px;vertical-align:middle;';
+        row.insertBefore(ic,row.firstChild);
+      }
+    }catch(e){}
+  }
   function setLabel(node,label){
     var walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT,null);
     var first=true,n;
@@ -305,6 +342,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     row.removeAttribute('data-sx-menu-hidden');
     row.setAttribute('data-sx-menu-item',label);
     setLabel(row,label);
+    setIcon(row,label);
     if(row.tagName==='A'){row.setAttribute('href',href);row.setAttribute('target','_blank');row.setAttribute('rel','noopener');}
     row.style.cursor='pointer';
     row.addEventListener('click',function(ev){
@@ -313,6 +351,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     },true);
     return row;
   }
+
   function norm(el){return ((el&&el.textContent)||'').replace(/\\s+/g,' ').trim();}
   /** Deepest clickable-ish row whose whole text is the given label. */
   function findRows(re){
