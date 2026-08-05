@@ -424,9 +424,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
     a.setAttribute('href',href);
     a.setAttribute('target','_blank');
     a.setAttribute('rel','noopener');
-    a.textContent=label;
-    a.style.cssText='display:block;padding:12px 16px;font-size:14px;font-weight:600;'
+    a.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:14px;font-weight:600;'
       +'letter-spacing:.3px;text-decoration:none;color:inherit;cursor:pointer;';
+    var ic=makeIcon(label);
+    if(ic){ic.style.cssText='flex:0 0 auto;';a.appendChild(ic);}
+    var sp=document.createElement('span');sp.textContent=label;a.appendChild(sp);
     return a;
   }
   function injectMenuRows(){
@@ -439,18 +441,19 @@ const GUARD_SCRIPT = `<script>(function(){try{
       return tpl?makeRow(tpl,label,href):scratchRow(label,href);
     };
     var frag=document.createDocumentFragment();
-    frag.appendChild(mk('JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
-    frag.appendChild(mk('WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
+    frag.appendChild(mk('Join telegram',LINKS['Join telegram']));
+    frag.appendChild(mk('Whatsapp channel',LINKS['Whatsapp channel']));
     var head=document.createElement('div');
-    head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
-    head.textContent='ABOUT DEVELOPER';
-    head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
+    head.setAttribute('data-sx-menu-item','About developer');
+    head.textContent='About developer';
+    head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;';
     frag.appendChild(head);
-    frag.appendChild(mk('TELEGRAM',LINKS['TELEGRAM']));
-    frag.appendChild(mk('INSTAGRAM',LINKS['INSTAGRAM']));
+    frag.appendChild(mk('Telegram',LINKS['Telegram']));
+    frag.appendChild(mk('Instagram',LINKS['Instagram']));
     if(tpl&&tpl.parentElement===host&&tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);
     else host.appendChild(frag);
   }
+
   function menu(){
     try{
       // dead store links
