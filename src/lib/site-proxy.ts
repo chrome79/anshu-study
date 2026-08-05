@@ -339,6 +339,79 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }
     return out;
   }
+  function visible(el){
+    try{
+      var r=el.getBoundingClientRect();
+      if(r.width<120||r.height<120)return false;
+      var cs=getComputedStyle(el);
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&parseFloat(cs.opacity||'1')>0.05;
+    }catch(e){return false;}
+  }
+  /** The open hamburger drawer/panel, if any. */
+  function findDrawer(){
+    var cand=document.querySelectorAll('[role="dialog"],aside,nav,div');
+    var best=null,bestArea=Infinity;
+    for(var i=0;i<cand.length;i++){
+      var el=cand[i];
+      if(el.id==='__next'||el.id==='root'||el.id==='app')continue;
+      var t=(el.textContent||'');
+      if(!/my\\s*batches|logout|log\\s*out|sign\\s*out|settings|my\\s*profile/i.test(t))continue;
+      if(!visible(el))continue;
+      var r=el.getBoundingClientRect();
+      if(r.width>window.innerWidth*0.95)continue;
+      var area=r.width*r.height;
+      if(area<bestArea){bestArea=area;best=el;}
+    }
+    return best;
+  }
+  /** A real menu row inside the drawer we can clone for styling. */
+  function findTemplate(drawer){
+    var cand=drawer.querySelectorAll('a,button,li');
+    var fallback=null;
+    for(var i=0;i<cand.length;i++){
+      var el=cand[i];
+      if(el.getAttribute('data-sx-menu-item'))continue;
+      var t=norm(el);
+      if(!t||t.length>28)continue;
+      if(el.querySelector('a,button'))continue;
+      if(/about\\s*us|my\\s*batches|settings|profile|nexa/i.test(t))return el;
+      if(!fallback)fallback=el;
+    }
+    return fallback;
+  }
+  function scratchRow(label,href){
+    var a=document.createElement('a');
+    a.setAttribute('data-sx-menu-item',label);
+    a.setAttribute('href',href);
+    a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener');
+    a.textContent=label;
+    a.style.cssText='display:block;padding:12px 16px;font-size:14px;font-weight:600;'
+      +'letter-spacing:.3px;text-decoration:none;color:inherit;cursor:pointer;';
+    return a;
+  }
+  function injectMenuRows(){
+    var drawer=findDrawer();
+    if(!drawer)return;
+    if(drawer.querySelector('[data-sx-menu-item]'))return;
+    var tpl=findTemplate(drawer);
+    var host=(tpl&&tpl.parentElement)||drawer;
+    var mk=function(label,href){
+      return tpl?makeRow(tpl,label,href):scratchRow(label,href);
+    };
+    var frag=document.createDocumentFragment();
+    frag.appendChild(mk('JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
+    frag.appendChild(mk('WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
+    var head=document.createElement('div');
+    head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
+    head.textContent='ABOUT DEVELOPER';
+    head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
+    frag.appendChild(head);
+    frag.appendChild(mk('TELEGRAM',LINKS['TELEGRAM']));
+    frag.appendChild(mk('INSTAGRAM',LINKS['INSTAGRAM']));
+    if(tpl&&tpl.parentElement===host&&tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);
+    else host.appendChild(frag);
+  }
   function menu(){
     try{
       // dead store links
