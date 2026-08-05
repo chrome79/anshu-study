@@ -141,7 +141,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-header]>*{min-width:0!important;}'
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
-    +'[data-sx-wordmark] img,[data-sx-header] img{display:none!important;}'
+    +'[data-sx-wordmark] img,[data-sx-header] img,[data-sx-brandimg]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;}'
     +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
@@ -339,6 +339,79 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }
     return out;
   }
+  function visible(el){
+    try{
+      var r=el.getBoundingClientRect();
+      if(r.width<120||r.height<120)return false;
+      var cs=getComputedStyle(el);
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&parseFloat(cs.opacity||'1')>0.05;
+    }catch(e){return false;}
+  }
+  /** The open hamburger drawer/panel, if any. */
+  function findDrawer(){
+    var cand=document.querySelectorAll('[role="dialog"],aside,nav,div');
+    var best=null,bestArea=Infinity;
+    for(var i=0;i<cand.length;i++){
+      var el=cand[i];
+      if(el.id==='__next'||el.id==='root'||el.id==='app')continue;
+      var t=(el.textContent||'');
+      if(!/my\\s*batches|logout|log\\s*out|sign\\s*out|settings|my\\s*profile/i.test(t))continue;
+      if(!visible(el))continue;
+      var r=el.getBoundingClientRect();
+      if(r.width>window.innerWidth*0.95)continue;
+      var area=r.width*r.height;
+      if(area<bestArea){bestArea=area;best=el;}
+    }
+    return best;
+  }
+  /** A real menu row inside the drawer we can clone for styling. */
+  function findTemplate(drawer){
+    var cand=drawer.querySelectorAll('a,button,li');
+    var fallback=null;
+    for(var i=0;i<cand.length;i++){
+      var el=cand[i];
+      if(el.getAttribute('data-sx-menu-item'))continue;
+      var t=norm(el);
+      if(!t||t.length>28)continue;
+      if(el.querySelector('a,button'))continue;
+      if(/about\\s*us|my\\s*batches|settings|profile|nexa/i.test(t))return el;
+      if(!fallback)fallback=el;
+    }
+    return fallback;
+  }
+  function scratchRow(label,href){
+    var a=document.createElement('a');
+    a.setAttribute('data-sx-menu-item',label);
+    a.setAttribute('href',href);
+    a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener');
+    a.textContent=label;
+    a.style.cssText='display:block;padding:12px 16px;font-size:14px;font-weight:600;'
+      +'letter-spacing:.3px;text-decoration:none;color:inherit;cursor:pointer;';
+    return a;
+  }
+  function injectMenuRows(){
+    var drawer=findDrawer();
+    if(!drawer)return;
+    if(drawer.querySelector('[data-sx-menu-item]'))return;
+    var tpl=findTemplate(drawer);
+    var host=(tpl&&tpl.parentElement)||drawer;
+    var mk=function(label,href){
+      return tpl?makeRow(tpl,label,href):scratchRow(label,href);
+    };
+    var frag=document.createDocumentFragment();
+    frag.appendChild(mk('JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
+    frag.appendChild(mk('WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
+    var head=document.createElement('div');
+    head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
+    head.textContent='ABOUT DEVELOPER';
+    head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
+    frag.appendChild(head);
+    frag.appendChild(mk('TELEGRAM',LINKS['TELEGRAM']));
+    frag.appendChild(mk('INSTAGRAM',LINKS['INSTAGRAM']));
+    if(tpl&&tpl.parentElement===host&&tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);
+    else host.appendChild(frag);
+  }
   function menu(){
     try{
       // dead store links
@@ -365,51 +438,40 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
-      var rows=findRows(/^about\\s*us$/i).concat(findRows(/^ua[\\s._-]?nexa$/i));
+      // hide the legacy rows when present (never a precondition for insertion)
+      var rows=findRows(/^ua[\\s._-]?nexa$/i);
       var pw=document.querySelectorAll('[data-pw-about]');
       for(var p=0;p<pw.length;p++)if(rows.indexOf(pw[p])<0)rows.push(pw[p]);
+      for(var r=0;r<rows.length;r++)rows[r].setAttribute('data-sx-menu-hidden','1');
 
-      var tpl=null;
-      for(var r=0;r<rows.length;r++){
-        rows[r].setAttribute('data-sx-menu-hidden','1');
-        if(!tpl)tpl=rows[r];
-      }
+      injectMenuRows();
 
-      if(tpl&&tpl.parentElement){
-        var host=tpl.parentElement;
-        var have=host.querySelector('[data-sx-menu-item]');
-        if(!have){
-          var frag=document.createDocumentFragment();
-          frag.appendChild(makeRow(tpl,'JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
-          frag.appendChild(makeRow(tpl,'WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
-          var head=document.createElement('div');
-          head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
-          head.textContent='ABOUT DEVELOPER';
-          head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
-          frag.appendChild(head);
-          frag.appendChild(makeRow(tpl,'TELEGRAM',LINKS['TELEGRAM']));
-          frag.appendChild(makeRow(tpl,'INSTAGRAM',LINKS['INSTAGRAM']));
-          if(tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);else host.appendChild(frag);
-        }
-      }
-
-      // every logo image (incl. drawer header) uses the new logo
+      // brand logo images: hide the one sitting next to the name / in the top bar
       var imgs=document.querySelectorAll('img');
       for(var q=0;q<imgs.length;q++){
         var im=imgs[q];
+        if(im.getAttribute('data-sx-logo')||im.getAttribute('data-sx-brandimg'))continue;
         var src=im.getAttribute('src')||'';
-        if(im.getAttribute('data-sx-logo'))continue;
-        if(src.indexOf('${NEW_LOGO}')>=0){im.setAttribute('data-sx-logo','1');continue;}
-        if(/i\\.ibb\\.co|1000002876|71696247|logo/i.test(src)){
-          im.setAttribute('data-sx-logo','1');
-          im.setAttribute('src','${NEW_LOGO}');
-          im.style.setProperty('border-radius','50%');
-          im.style.setProperty('object-fit','cover');
+        var alt=im.getAttribute('alt')||'';
+        var looksBrand=/i\\.ibb\\.co|1000002876|71696247|anshu|ak-logo|logo|favicon|brand/i.test(src+' '+alt)
+          ||src.indexOf('${NEW_LOGO}')>=0||src.indexOf('${LOGO_ASSET}')>=0;
+        if(!looksBrand)continue;
+        var rect=null;try{rect=im.getBoundingClientRect();}catch(e0){}
+        var top=rect?(rect.top+(window.scrollY||0)):0;
+        var nearName=!!(im.closest&&im.closest('[data-sx-wordmark],[data-sx-header]'));
+        if(nearName||top<=120){
+          im.setAttribute('data-sx-brandimg','1');
+          im.style.setProperty('display','none','important');
+          continue;
         }
+        if(src.indexOf('${NEW_LOGO}')>=0){im.setAttribute('data-sx-logo','1');continue;}
+        im.setAttribute('data-sx-logo','1');
+        im.setAttribute('src','${NEW_LOGO}');
+        im.style.setProperty('border-radius','50%');
+        im.style.setProperty('object-fit','cover');
       }
 
-      // "- back" control next to the hamburger becomes the wordmark + logo
-
+      // "- back" control next to the hamburger becomes the text-only wordmark
       var bc=document.querySelectorAll('span,div,button,a,p,h1,h2');
       for(var b=0;b<bc.length;b++){
         var e2=bc[b];
@@ -418,11 +480,10 @@ const GUARD_SCRIPT = `<script>(function(){try{
         if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2))continue;
         if(e2.children.length>1)continue;
         e2.setAttribute('data-sx-wordmark','1');
-        e2.textContent='';
-        var mk=function(txt){var s=document.createElement('span');s.textContent=txt;s.style.cssText='flex:0 1 auto;min-width:0;';return s;};
-        e2.appendChild(mk('STUDYxANSHU'));
+        e2.textContent='STUDYxANSHU';
         e2.style.setProperty('white-space','nowrap','important');
       }
+
     }catch(e){}
   }
 
@@ -437,6 +498,20 @@ const GUARD_SCRIPT = `<script>(function(){try{
           node=node.parentElement;
         }
         if(hdr)hdr.setAttribute('data-sx-header','1');
+      }
+      // header row, independent of the old "- back" control
+      if(!document.querySelector('[data-sx-header]')){
+        var all=document.querySelectorAll('header,div,nav');
+        for(var h=0;h<all.length;h++){
+          var el=all[h];
+          if(el.id==='__next'||el.id==='root'||el.id==='app')continue;
+          var rc;try{rc=el.getBoundingClientRect();}catch(eh){continue;}
+          if(rc.top>12||rc.height<32||rc.height>96)continue;
+          if(rc.width<window.innerWidth*0.85)continue;
+          if(el.querySelector('[data-sx-header]'))continue;
+          el.setAttribute('data-sx-header','1');
+          break;
+        }
       }
       // XP pill
       var cand=document.querySelectorAll('div,span,p,button');
