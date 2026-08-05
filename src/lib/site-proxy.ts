@@ -365,51 +365,40 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
-      var rows=findRows(/^about\\s*us$/i).concat(findRows(/^ua[\\s._-]?nexa$/i));
+      // hide the legacy rows when present (never a precondition for insertion)
+      var rows=findRows(/^ua[\\s._-]?nexa$/i);
       var pw=document.querySelectorAll('[data-pw-about]');
       for(var p=0;p<pw.length;p++)if(rows.indexOf(pw[p])<0)rows.push(pw[p]);
+      for(var r=0;r<rows.length;r++)rows[r].setAttribute('data-sx-menu-hidden','1');
 
-      var tpl=null;
-      for(var r=0;r<rows.length;r++){
-        rows[r].setAttribute('data-sx-menu-hidden','1');
-        if(!tpl)tpl=rows[r];
-      }
+      injectMenuRows();
 
-      if(tpl&&tpl.parentElement){
-        var host=tpl.parentElement;
-        var have=host.querySelector('[data-sx-menu-item]');
-        if(!have){
-          var frag=document.createDocumentFragment();
-          frag.appendChild(makeRow(tpl,'JOIN TELEGRAM',LINKS['JOIN TELEGRAM']));
-          frag.appendChild(makeRow(tpl,'WHATSAPP CHANNEL',LINKS['WHATSAPP CHANNEL']));
-          var head=document.createElement('div');
-          head.setAttribute('data-sx-menu-item','ABOUT DEVELOPER');
-          head.textContent='ABOUT DEVELOPER';
-          head.style.cssText='padding:14px 16px 6px;font-size:11px;font-weight:700;letter-spacing:1px;opacity:.6;text-transform:uppercase;';
-          frag.appendChild(head);
-          frag.appendChild(makeRow(tpl,'TELEGRAM',LINKS['TELEGRAM']));
-          frag.appendChild(makeRow(tpl,'INSTAGRAM',LINKS['INSTAGRAM']));
-          if(tpl.nextSibling)host.insertBefore(frag,tpl.nextSibling);else host.appendChild(frag);
-        }
-      }
-
-      // every logo image (incl. drawer header) uses the new logo
+      // brand logo images: hide the one sitting next to the name / in the top bar
       var imgs=document.querySelectorAll('img');
       for(var q=0;q<imgs.length;q++){
         var im=imgs[q];
+        if(im.getAttribute('data-sx-logo')||im.getAttribute('data-sx-brandimg'))continue;
         var src=im.getAttribute('src')||'';
-        if(im.getAttribute('data-sx-logo'))continue;
-        if(src.indexOf('${NEW_LOGO}')>=0){im.setAttribute('data-sx-logo','1');continue;}
-        if(/i\\.ibb\\.co|1000002876|71696247|logo/i.test(src)){
-          im.setAttribute('data-sx-logo','1');
-          im.setAttribute('src','${NEW_LOGO}');
-          im.style.setProperty('border-radius','50%');
-          im.style.setProperty('object-fit','cover');
+        var alt=im.getAttribute('alt')||'';
+        var looksBrand=/i\\.ibb\\.co|1000002876|71696247|anshu|ak-logo|logo|favicon|brand/i.test(src+' '+alt)
+          ||src.indexOf('${NEW_LOGO}')>=0||src.indexOf('${LOGO_ASSET}')>=0;
+        if(!looksBrand)continue;
+        var rect=null;try{rect=im.getBoundingClientRect();}catch(e0){}
+        var top=rect?(rect.top+(window.scrollY||0)):0;
+        var nearName=!!(im.closest&&im.closest('[data-sx-wordmark],[data-sx-header]'));
+        if(nearName||top<=120){
+          im.setAttribute('data-sx-brandimg','1');
+          im.style.setProperty('display','none','important');
+          continue;
         }
+        if(src.indexOf('${NEW_LOGO}')>=0){im.setAttribute('data-sx-logo','1');continue;}
+        im.setAttribute('data-sx-logo','1');
+        im.setAttribute('src','${NEW_LOGO}');
+        im.style.setProperty('border-radius','50%');
+        im.style.setProperty('object-fit','cover');
       }
 
-      // "- back" control next to the hamburger becomes the wordmark + logo
-
+      // "- back" control next to the hamburger becomes the text-only wordmark
       var bc=document.querySelectorAll('span,div,button,a,p,h1,h2');
       for(var b=0;b<bc.length;b++){
         var e2=bc[b];
@@ -418,11 +407,10 @@ const GUARD_SCRIPT = `<script>(function(){try{
         if(!/^[<‹«←⟨\\-–—]{0,2}\\s*back$/i.test(t2))continue;
         if(e2.children.length>1)continue;
         e2.setAttribute('data-sx-wordmark','1');
-        e2.textContent='';
-        var mk=function(txt){var s=document.createElement('span');s.textContent=txt;s.style.cssText='flex:0 1 auto;min-width:0;';return s;};
-        e2.appendChild(mk('STUDYxANSHU'));
+        e2.textContent='STUDYxANSHU';
         e2.style.setProperty('white-space','nowrap','important');
       }
+
     }catch(e){}
   }
 
