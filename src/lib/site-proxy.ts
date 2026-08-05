@@ -499,6 +499,20 @@ const GUARD_SCRIPT = `<script>(function(){try{
         }
         if(hdr)hdr.setAttribute('data-sx-header','1');
       }
+      // header row, independent of the old "- back" control
+      if(!document.querySelector('[data-sx-header]')){
+        var all=document.querySelectorAll('header,div,nav');
+        for(var h=0;h<all.length;h++){
+          var el=all[h];
+          if(el.id==='__next'||el.id==='root'||el.id==='app')continue;
+          var rc;try{rc=el.getBoundingClientRect();}catch(eh){continue;}
+          if(rc.top>12||rc.height<32||rc.height>96)continue;
+          if(rc.width<window.innerWidth*0.85)continue;
+          if(el.querySelector('[data-sx-header]'))continue;
+          el.setAttribute('data-sx-header','1');
+          break;
+        }
+      }
       // XP pill
       var cand=document.querySelectorAll('div,span,p,button');
       for(var x=0;x<cand.length;x++){
