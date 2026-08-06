@@ -160,7 +160,6 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'font-size:20px!important;line-height:1!important;font-weight:700!important;cursor:pointer!important;'
     +'clip:auto!important;clip-path:none!important;}'
     +'[data-sx-dock-upstream]{display:none!important;}'
-    +'[data-sx-float-action][data-sx-action-hidden="1"]{display:none!important;visibility:hidden!important;pointer-events:none!important;}'
 
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
@@ -601,45 +600,26 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
   }
 
-  /** Find the floating Info / Brainix / Live / Batch controls owned by the
-   *  loader. The right-edge toggle controls these buttons, not the drawer. */
-  function floatingActions(){
-    var found=[];
+  /** Find the site's hamburger / menu button, if any. */
+  function hamburger(){
     try{
-      var q=document.querySelectorAll('button,[role="button"],a,div,span');
+      var q=document.querySelectorAll('button,[role="button"],a,div');
+      var best=null;
       for(var i=0;i<q.length;i++){
         var el=q[i];
         if(el.getAttribute('data-sx-dock'))continue;
-        if(el.getAttribute('data-sx-float-action')){
-          if(found.indexOf(el)<0)found.push(el);
-          continue;
-        }
-        var label=norm(el);
-        if(!/^(info|brainix|live|batch)$/i.test(label))continue;
-        if(el.querySelector&&el.querySelector('button,a,[role="button"]'))continue;
-        var row=el;
-        for(var j=0;j<3&&row.parentElement;j++){
-          if(row.tagName==='BUTTON'||row.tagName==='A'||row.getAttribute('role')==='button')break;
-          if(norm(row.parentElement)!==label)break;
-          row=row.parentElement;
-        }
-        if(found.indexOf(row)<0){row.setAttribute('data-sx-float-action','1');found.push(row);}
+        var lab=((el.getAttribute('aria-label')||'')+' '+(el.getAttribute('title')||'')
+          +' '+((el.className&&el.className.toString())||'')).toLowerCase();
+        var isLabelled=lab.indexOf('menu')>-1||lab.indexOf('hamburger')>-1||lab.indexOf('drawer')>-1
+          ||lab.indexOf('sidebar')>-1;
+        var r;try{r=el.getBoundingClientRect();}catch(e1){continue;}
+        if(r.width<20||r.width>72||r.height<20||r.height>72)continue;
+        if(r.top>96)continue;
+        if(isLabelled)return el;
+        if(!best&&r.left<window.innerWidth*0.35&&el.querySelector&&el.querySelector('svg'))best=el;
       }
-    }catch(e){}
-    return found;
-  }
-  function setFloatingActions(open,items){
-    for(var i=0;i<items.length;i++){
-      var el=items[i];
-      el.setAttribute('data-sx-action-hidden',open?'0':'1');
-      if(open){
-        el.style.removeProperty('display');el.style.removeProperty('visibility');el.style.removeProperty('pointer-events');
-      }else{
-        el.style.setProperty('display','none','important');
-        el.style.setProperty('visibility','hidden','important');
-        el.style.setProperty('pointer-events','none','important');
-      }
-    }
+      return best;
+    }catch(e){return null;}
   }
 
   /** Our own right-edge toggle: always present, never clipped by upstream layout. */
@@ -661,59 +641,26 @@ const GUARD_SCRIPT = `<script>(function(){try{
         el.setAttribute('data-sx-dock-upstream','1');
       }
 
-      var actions=floatingActions();
       var btn=document.querySelector('[data-sx-dock]');
-      if(btn&&btn.isConnected){
-        var open=btn.getAttribute('data-open')!=='0';
-        setFloatingActions(open,actions);
-        return;
-      }
+      if(btn&&btn.isConnected)return;
       btn=document.createElement('button');
       btn.setAttribute('data-sx-dock','1');
-      btn.setAttribute('data-open','1');
       btn.setAttribute('type','button');
-      btn.setAttribute('aria-label','Hide floating tools');
+      btn.setAttribute('aria-label','Open menu');
       btn.textContent='\u2039';
       btn.addEventListener('click',function(ev){
         ev.preventDefault();ev.stopPropagation();
-        var open=btn.getAttribute('data-open')!=='0';
-        btn.setAttribute('data-open',open?'0':'1');
-        btn.setAttribute('aria-label',open?'Show floating tools':'Hide floating tools');
-        btn.textContent=open?'\u203a':'\u2039';
-        var items=floatingActions();
-        setFloatingActions(!open,items);
+        var h=hamburger();
+        if(h){
+          try{h.click();}catch(e2){}
+          var open=btn.getAttribute('data-open')==='1';
+          btn.setAttribute('data-open',open?'0':'1');
+          btn.textContent=open?'\u2039':'\u203a';
+          return;
+        }
+        try{window.scrollTo({top:0,behavior:'smooth'});}catch(e3){window.scrollTo(0,0);}
       });
       document.body.appendChild(btn);
-    }catch(e){}
-  }
-
-  /** Replace branding that is rendered later by React or the loader. Runs only
-   *  after hydration so upstream server markup is not mutated mid-hydration. */
-  function visibleBranding(){
-    try{
-      var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{
-        acceptNode:function(n){
-          var p=n.parentElement;
-          if(!p||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(p.tagName))return NodeFilter.FILTER_REJECT;
-          return /marco/i.test(n.nodeValue||'')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
-        }
-      });
-      var nodes=[],n;
-      while((n=walker.nextNode()))nodes.push(n);
-      for(var i=0;i<nodes.length;i++){
-        nodes[i].nodeValue=(nodes[i].nodeValue||'')
-          .replace(/PW[\s._-]*MARCO/gi,'STUDYxANSHU')
-          .replace(/\bMARCO\b/gi,'ANSHU KESHAWAT');
-      }
-      var attrs=document.querySelectorAll('[title],[aria-label],[placeholder],[alt]');
-      for(var j=0;j<attrs.length;j++){
-        var el=attrs[j],names=['title','aria-label','placeholder','alt'];
-        for(var k=0;k<names.length;k++){
-          var val=el.getAttribute(names[k]);
-          if(!val||!/marco/i.test(val))continue;
-          el.setAttribute(names[k],val.replace(/PW[\s._-]*MARCO/gi,'STUDYxANSHU').replace(/\bMARCO\b/gi,'ANSHU KESHAWAT'));
-        }
-      }
     }catch(e){}
   }
 
@@ -799,7 +746,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   }
 
   var hydrated=false;
-  function tick(){if(hydrated){kill();menu();ui();visibleBranding();dock();}}
+  function tick(){kill();if(hydrated){menu();ui();dock();}}
   function ready(){hydrated=true;tick();welcome();}
   if(document.addEventListener){
     document.addEventListener('DOMContentLoaded',tick);
