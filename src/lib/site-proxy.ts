@@ -609,7 +609,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
       var q=document.querySelectorAll('button,[role="button"],a,div,span');
       for(var i=0;i<q.length;i++){
         var el=q[i];
-        if(el.getAttribute('data-sx-dock')||el.getAttribute('data-sx-float-action'))continue;
+        if(el.getAttribute('data-sx-dock'))continue;
+        if(el.getAttribute('data-sx-float-action')){
+          if(found.indexOf(el)<0)found.push(el);
+          continue;
+        }
         var label=norm(el);
         if(!/^(info|brainix|live|batch)$/i.test(label))continue;
         if(el.querySelector&&el.querySelector('button,a,[role="button"]'))continue;
