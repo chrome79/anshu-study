@@ -153,8 +153,14 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-dock]{position:fixed!important;right:0!important;top:50%!important;transform:translateY(-50%)!important;'
     +'z-index:2147482000!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;'
     +'display:flex!important;align-items:center!important;justify-content:center!important;'
-    +'min-width:44px!important;min-height:56px!important;padding:10px 12px!important;transition:none!important;'
+    +'min-width:44px!important;min-height:56px!important;width:44px!important;height:56px!important;'
+    +'padding:10px 12px!important;transition:none!important;margin:0!important;'
+    +'background:#000!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;'
+    +'border-right:0!important;border-radius:14px 0 0 14px!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important;'
+    +'font-size:20px!important;line-height:1!important;font-weight:700!important;cursor:pointer!important;'
     +'clip:auto!important;clip-path:none!important;}'
+    +'[data-sx-dock-upstream]{display:none!important;}'
+
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
   var st=document.createElement('style');st.setAttribute('data-sx-guard','1');st.textContent=css;
@@ -594,35 +600,70 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
   }
 
-  /** The right-edge drawer toggle must stay visible, tappable and un-clipped. */
+  /** Find the site's hamburger / menu button, if any. */
+  function hamburger(){
+    try{
+      var q=document.querySelectorAll('button,[role="button"],a,div');
+      var best=null;
+      for(var i=0;i<q.length;i++){
+        var el=q[i];
+        if(el.getAttribute('data-sx-dock'))continue;
+        var lab=((el.getAttribute('aria-label')||'')+' '+(el.getAttribute('title')||'')
+          +' '+((el.className&&el.className.toString())||'')).toLowerCase();
+        var isLabelled=lab.indexOf('menu')>-1||lab.indexOf('hamburger')>-1||lab.indexOf('drawer')>-1
+          ||lab.indexOf('sidebar')>-1;
+        var r;try{r=el.getBoundingClientRect();}catch(e1){continue;}
+        if(r.width<20||r.width>72||r.height<20||r.height>72)continue;
+        if(r.top>96)continue;
+        if(isLabelled)return el;
+        if(!best&&r.left<window.innerWidth*0.35&&el.querySelector&&el.querySelector('svg'))best=el;
+      }
+      return best;
+    }catch(e){return null;}
+  }
+
+  /** Our own right-edge toggle: always present, never clipped by upstream layout. */
   function dock(){
     try{
+      // hide any upstream duplicate so there is never a second pill
       var els=document.querySelectorAll('button,div,a,span');
       for(var i=0;i<els.length;i++){
         var el=els[i];
-        if(el.getAttribute('data-sx-dock'))continue;
+        if(el.getAttribute('data-sx-dock')||el.getAttribute('data-sx-dock-upstream'))continue;
         var cs=window.getComputedStyle(el);
         if(cs.position!=='fixed')continue;
         var r=el.getBoundingClientRect();
         if(r.width>90||r.height>110||r.width<10||r.height<10)continue;
         if(r.right<window.innerWidth-24)continue;
         var t=norm(el);
-        if(t.length>2)continue;
-        if(t&&!/[<>‹›«»⟨⟩←→|]/.test(t))continue;
-        el.setAttribute('data-sx-dock','1');
-        // Unclip every ancestor so scrolling/hover can never hide it.
-        var p=el.parentElement;
-        for(var j=0;j<8&&p&&p.tagName!=='BODY';j++){
-          var pcs=window.getComputedStyle(p);
-          if(pcs.overflow!=='visible'||pcs.overflowX!=='visible'||pcs.overflowY!=='visible'){
-            try{document.body.appendChild(el);}catch(e2){}
-            break;
-          }
-          p=p.parentElement;
-        }
+        if(t.length>2&&t.length>0)continue;
+        if(t&&!/[<>\u2039\u203a\u00ab\u00bb\u27e8\u27e9\u2190\u2192|]/.test(t))continue;
+        el.setAttribute('data-sx-dock-upstream','1');
       }
+
+      var btn=document.querySelector('[data-sx-dock]');
+      if(btn&&btn.isConnected)return;
+      btn=document.createElement('button');
+      btn.setAttribute('data-sx-dock','1');
+      btn.setAttribute('type','button');
+      btn.setAttribute('aria-label','Open menu');
+      btn.textContent='\u2039';
+      btn.addEventListener('click',function(ev){
+        ev.preventDefault();ev.stopPropagation();
+        var h=hamburger();
+        if(h){
+          try{h.click();}catch(e2){}
+          var open=btn.getAttribute('data-open')==='1';
+          btn.setAttribute('data-open',open?'0':'1');
+          btn.textContent=open?'\u2039':'\u203a';
+          return;
+        }
+        try{window.scrollTo({top:0,behavior:'smooth'});}catch(e3){window.scrollTo(0,0);}
+      });
+      document.body.appendChild(btn);
     }catch(e){}
   }
+
 
   /** Welcome announcement modal - injected, outside the React tree. */
   var FEATURES=['Live Classes, all batches','Recorded Lectures, full access',
