@@ -624,6 +624,19 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
     return found;
   }
+  function setFloatingActions(open,items){
+    for(var i=0;i<items.length;i++){
+      var el=items[i];
+      el.setAttribute('data-sx-action-hidden',open?'0':'1');
+      if(open){
+        el.style.removeProperty('display');el.style.removeProperty('visibility');el.style.removeProperty('pointer-events');
+      }else{
+        el.style.setProperty('display','none','important');
+        el.style.setProperty('visibility','hidden','important');
+        el.style.setProperty('pointer-events','none','important');
+      }
+    }
+  }
 
   /** Our own right-edge toggle: always present, never clipped by upstream layout. */
   function dock(){
@@ -648,7 +661,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
       var btn=document.querySelector('[data-sx-dock]');
       if(btn&&btn.isConnected){
         var open=btn.getAttribute('data-open')!=='0';
-        for(var a=0;a<actions.length;a++)actions[a].setAttribute('data-sx-action-hidden',open?'0':'1');
+        setFloatingActions(open,actions);
         return;
       }
       btn=document.createElement('button');
@@ -664,7 +677,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         btn.setAttribute('aria-label',open?'Show floating tools':'Hide floating tools');
         btn.textContent=open?'\u203a':'\u2039';
         var items=floatingActions();
-        for(var j=0;j<items.length;j++)items[j].setAttribute('data-sx-action-hidden',open?'1':'0');
+        setFloatingActions(!open,items);
       });
       document.body.appendChild(btn);
     }catch(e){}
@@ -782,7 +795,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   }
 
   var hydrated=false;
-  function tick(){kill();if(hydrated){menu();ui();visibleBranding();dock();}}
+  function tick(){if(hydrated){kill();menu();ui();visibleBranding();dock();}}
   function ready(){hydrated=true;tick();welcome();}
   if(document.addEventListener){
     document.addEventListener('DOMContentLoaded',tick);
