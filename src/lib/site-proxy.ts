@@ -945,7 +945,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   }
 
   var hydrated=false;
-  function tick(){kill();if(hydrated){menu();ui();dock();}}
+  function tick(){kill();if(hydrated){menu();ui();dock();hero();}}
   function ready(){hydrated=true;tick();welcome();}
   if(document.addEventListener){
     document.addEventListener('DOMContentLoaded',tick);
