@@ -793,16 +793,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   var PAGE=24;
   function hero(){
     try{
-      var onStudy=/(^|\/)study/i.test(location.pathname||'');
-      var existing=document.querySelector('[data-sx-hero]');
-      if(!onStudy){
-        if(existing&&existing.parentElement)existing.parentElement.removeChild(existing);
-        var hid=document.querySelectorAll('[data-sx-hero-hidden]');
-        for(var h=0;h<hid.length;h++)hid[h].removeAttribute('data-sx-hero-hidden');
-        return;
-      }
-      if(existing)return;
-
+      if(document.querySelector('[data-sx-hero]'))return;
       var nodes=document.querySelectorAll('div,section,article');
       var target=null;
       for(var i=0;i<nodes.length;i++){
