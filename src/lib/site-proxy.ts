@@ -109,7 +109,7 @@ export function rewriteBranding(input: string): string {
   const urls = protectUrls(out);
   let body = urls.text;
   body = body.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
-  body = body.replace(/PW[\s._-]?MARCO/gi, BRAND);
+  body = body.replace(/PW[\s._-]*MARCO/gi, BRAND);
   body = body.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
   // Bare "marco" in visible copy only - never inside identifiers.
   body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
@@ -130,7 +130,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){try{window[n]=NOOP;}catch(e2){}}
   });
   var css='#marcoAuthDiv,#marcoWelcomeOv,#marcoBrainixPanel{display:none!important;visibility:hidden!important;}'
-    +'[data-sx-popup-killed],[data-sx-menu-hidden]{display:none!important;visibility:hidden!important;}'
+    +'[data-sx-popup-killed],[data-sx-menu-hidden],[data-sx-drawer-brand-original]{display:none!important;visibility:hidden!important;}'
     /* ---- global fit ---- */
     +'html,body{overflow-x:hidden!important;max-width:100vw!important;}'
     +'*{-webkit-tap-highlight-color:transparent;}'
@@ -142,9 +142,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
     +'[data-sx-wordmark] img,[data-sx-header] img,[data-sx-brandimg]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;}'
-    +'[data-sx-drawer-logo]{display:block!important;visibility:visible!important;width:34px!important;height:34px!important;'
+    +'[data-sx-drawer-brand="owned"] [data-sx-drawer-logo]{display:block!important;visibility:visible!important;opacity:1!important;width:34px!important;height:34px!important;'
     +'min-width:34px!important;border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
-    +'[data-sx-drawer-brand]{display:inline-flex!important;align-items:center!important;gap:10px!important;}'
+    +'[data-sx-drawer-brand="owned"]{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:10px!important;'
+    +'width:max-content!important;max-width:100%!important;min-height:38px!important;position:relative!important;z-index:2!important;}'
+    +'[data-sx-drawer-brand="owned"] [data-sx-drawer-text]{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important;font-weight:800!important;}'
     +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
@@ -456,34 +458,62 @@ const GUARD_SCRIPT = `<script>(function(){try{
     else host.appendChild(frag);
   }
 
+  function oldBrandText(value){
+    return /^(study\s*x\s*anshu|studyxanshu|pw[\s._-]*marco|pw|marco|ua[\s._-]?nexa|anshu\s*keshawat)$/i.test((value||'').trim());
+  }
+
+  /** Replace old branding in visible text added after the initial response rewrite. */
+  function cleanVisibleBranding(){
+    try{
+      var root=document.body;if(!root)return;
+      var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),node;
+      while((node=walker.nextNode())){
+        var parent=node.parentElement;
+        if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/i.test(parent.tagName))continue;
+        if(parent.closest&&parent.closest('[data-sx-drawer-brand="owned"]'))continue;
+        var value=node.nodeValue||'';
+        var next=value.replace(/PW[\s._-]*MARCO/gi,'${BRAND}')
+          .replace(/(^|[^\w\/.\-])MARCO(?=$|[^\w\/.\-])/gi,'$1${DEV_NAME}');
+        if(next!==value)node.nodeValue=next;
+      }
+    }catch(e){}
+  }
+
   /** Keep the drawer title as our brand, with our logo next to it. */
   function drawerBrand(){
     try{
       var drawer=findDrawer();
       if(!drawer)return;
-      var host=drawer.querySelector('[data-sx-drawer-brand]');
+      var host=drawer.querySelector('[data-sx-drawer-brand="owned"]');
       if(!host){
-        // biggest-font short text row near the top of the drawer
         var cand=drawer.querySelectorAll('h1,h2,h3,p,span,div,a');
         var dr=drawer.getBoundingClientRect();
         var best=null,bestSize=0;
         for(var i=0;i<cand.length;i++){
           var el=cand[i];
+          if(el.closest&&el.closest('[data-sx-drawer-brand="owned"],[data-sx-menu-item]'))continue;
           var t=norm(el);
-          if(!t||t.length>26)continue;
-          if(el.querySelector('a,button'))continue;
+          if(!t||t.length>26||el.querySelector('a,button'))continue;
           var r;try{r=el.getBoundingClientRect();}catch(e0){continue;}
-          if(r.top-dr.top>140)continue;
+          if(r.top-dr.top>160||!oldBrandText(t))continue;
           var fs=parseFloat(getComputedStyle(el).fontSize||'0');
-          // only ever rewrite the upstream brand text - never a section heading
-          var isBrand=/^(study\\s*x\\s*anshu|studyxanshu|pw[\\s._-]*marco|pw|marco|ua[\\s._-]?nexa|anshu\\s*keshawat)$/i.test(t);
-          if(!isBrand)continue;
           if(fs>bestSize){bestSize=fs;best=el;}
-
         }
-        if(!best)return;
-        best.setAttribute('data-sx-drawer-brand','1');
-        host=best;
+        var originalRow=best;
+        if(originalRow){
+          for(var up=0;up<3&&originalRow.parentElement&&originalRow.parentElement!==drawer;up++){
+            var par=originalRow.parentElement,pt=norm(par);
+            var pr;try{pr=par.getBoundingClientRect();}catch(ep){break;}
+            if(pr.top-dr.top>160||pt.length>40||!oldBrandText(pt))break;
+            originalRow=par;
+          }
+          originalRow.setAttribute('data-sx-drawer-brand-original','1');
+        }
+        host=document.createElement('div');
+        host.setAttribute('data-sx-drawer-brand','owned');
+        host.setAttribute('aria-label','${BRAND}');
+        if(originalRow&&originalRow.parentElement)originalRow.parentElement.insertBefore(host,originalRow);
+        else drawer.insertBefore(host,drawer.firstChild);
       }
       var txt=host.querySelector('[data-sx-drawer-text]');
       if(!txt){
@@ -492,19 +522,24 @@ const GUARD_SCRIPT = `<script>(function(){try{
         img.setAttribute('data-sx-drawer-logo','1');
         img.setAttribute('alt','${BRAND}');
         img.setAttribute('src','${NEW_LOGO}');
+        img.addEventListener('error',function(){
+          if(this.getAttribute('src')!=='${NEW_LOGO}')this.setAttribute('src','${NEW_LOGO}');
+        });
         host.appendChild(img);
         txt=document.createElement('span');
         txt.setAttribute('data-sx-drawer-text','1');
-        txt.style.cssText='white-space:nowrap;font-weight:800;';
+        txt.textContent='${BRAND}';
         host.appendChild(txt);
       }
       if(txt.textContent!=='${BRAND}')txt.textContent='${BRAND}';
       var lg=host.querySelector('[data-sx-drawer-logo]');
       if(lg){
-        if((lg.getAttribute('src')||'').indexOf('${LOGO_ASSET}')<0)lg.setAttribute('src','${NEW_LOGO}');
+        if((lg.getAttribute('src')||'')!=='${NEW_LOGO}')lg.setAttribute('src','${NEW_LOGO}');
         lg.removeAttribute('data-sx-brandimg');
+        lg.removeAttribute('data-sx-logo');
         lg.style.setProperty('display','block','important');
         lg.style.setProperty('visibility','visible','important');
+        lg.style.setProperty('opacity','1','important');
       }
     }catch(e){}
   }
@@ -581,6 +616,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         }
       }
 
+      cleanVisibleBranding();
       drawerBrand();
       injectMenuRows();
 
@@ -590,7 +626,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var im=imgs[q];
         if(im.getAttribute('data-sx-logo')||im.getAttribute('data-sx-brandimg'))continue;
         if(im.getAttribute('data-sx-drawer-logo'))continue;
-        if(im.closest&&im.closest('[data-sx-drawer],[data-sx-drawer-brand]'))continue;
+        if(im.closest&&im.closest('[data-sx-drawer],[data-sx-drawer-brand="owned"]'))continue;
         var src=im.getAttribute('src')||'';
         var alt=im.getAttribute('alt')||'';
         var looksBrand=/i\\.ibb\\.co|1000002876|71696247|anshu|ak-logo|logo|favicon|brand/i.test(src+' '+alt)
