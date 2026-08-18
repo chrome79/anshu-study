@@ -795,23 +795,33 @@ const GUARD_SCRIPT = `<script>(function(){try{
     try{
       if(document.querySelector('[data-sx-hero]'))return;
       var nodes=document.querySelectorAll('div,section,article');
-      var target=null;
+      var target=null,best=1e9;
       for(var i=0;i<nodes.length;i++){
         var t=norm(nodes[i]).toLowerCase();
         if(t.indexOf('join our community')<0)continue;
-        if(t.length>420)continue;
-        target=nodes[i];
+        if(t.length>300)continue;
+        // smallest matching node = the community card itself, not the page wrapper
+        if(t.length<best){best=t.length;target=nodes[i];}
       }
       if(!target)return;
-      // climb to the outermost card that still is mostly this section
+      var BAD={BODY:1,MAIN:1,HTML:1};
+      function safe(el){
+        if(!el||BAD[el.tagName])return false;
+        if(el.id==='__next'||el.id==='root'||el.id==='app')return false;
+        var txt=norm(el).toLowerCase();
+        if(txt.indexOf('join our community')<0)return false;
+        if(txt.length>360)return false;
+        return true;
+      }
+      // climb only while the parent is still essentially just this card
       var host=target;
-      for(var k=0;k<4;k++){
+      for(var k=0;k<3;k++){
         var p=host.parentElement;
-        if(!p||p.tagName==='BODY')break;
-        if(norm(p).toLowerCase().indexOf('join our community')<0)break;
-        if(norm(p).length>norm(target).length+160)break;
+        if(!safe(p))break;
+        if(norm(p).length>norm(target).length+120)break;
         host=p;
       }
+      if(!safe(host))return;
       var wrap=document.createElement('section');
       wrap.setAttribute('data-sx-hero','1');
       wrap.innerHTML='<p class="sxh1">Love \u2764\ufe0f from</p>'
@@ -822,7 +832,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<button class="sxmore" type="button">Load more</button>';
       host.setAttribute('data-sx-hero-hidden','1');
       if(host.parentElement)host.parentElement.insertBefore(wrap,host);
-      else document.body.appendChild(wrap);
+      else return;
+
 
       // batch list comes from the page's batch <select>, if present
       var items=[];
