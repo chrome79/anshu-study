@@ -156,38 +156,9 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'-webkit-appearance:none!important;background-image:none!important;}'
     /* ---- floating right-edge toggle: removed, hide any upstream duplicate ---- */
     +'[data-sx-dock],[data-sx-dock-upstream]{display:none!important;}'
-    /* ---- hero replacing the community card ---- */
-    +'[data-sx-hero-hidden]{display:none!important;}'
-    +'@keyframes sxUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}'
-    +'@keyframes sxShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}'
-    +'[data-sx-hero]{margin:16px 0 4px!important;padding:22px 16px!important;text-align:center!important;}'
-    +'[data-sx-hero] .sxh1{margin:0!important;font-size:clamp(15px,4.6vw,20px)!important;font-weight:600!important;'
-    +'letter-spacing:.6px!important;color:#0b1220;animation:sxUp .7s cubic-bezier(.22,1,.36,1) both;}'
-    +'.dark [data-sx-hero] .sxh1,[data-sx-dark] [data-sx-hero] .sxh1{color:#fff;}'
-    +'@media (prefers-color-scheme:dark){[data-sx-hero] .sxh1{color:#fff;}}'
-    +'[data-sx-hero] .sxh2{margin:6px 0 0!important;font-size:clamp(26px,9vw,44px)!important;font-weight:900!important;'
-    +'letter-spacing:2px!important;line-height:1.05!important;background:linear-gradient(90deg,#a855f7,#ec4899,#f97316,#ec4899,#a855f7);'
-    +'background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;'
-    +'animation:sxUp .8s .1s cubic-bezier(.22,1,.36,1) both,sxShift 7s 1s ease-in-out infinite;}'
-    +'[data-sx-hero] .sxsub{margin:10px auto 0!important;max-width:520px!important;font-size:13px!important;'
-    +'line-height:1.6!important;opacity:.72;animation:sxUp .9s .2s cubic-bezier(.22,1,.36,1) both;}'
-    +'[data-sx-hero] .sxsearch{margin:16px auto 0!important;display:block!important;width:100%!important;max-width:420px!important;'
-    +'padding:11px 14px!important;border-radius:9999px!important;font-size:14px!important;'
-    +'border:1px solid rgba(148,163,184,.35)!important;background:rgba(148,163,184,.10)!important;color:inherit!important;'
-    +'outline:none!important;animation:sxUp 1s .28s cubic-bezier(.22,1,.36,1) both;}'
-    +'[data-sx-hero] .sxgrid{margin:16px auto 0!important;display:grid!important;gap:12px!important;'
-    +'grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;max-width:900px!important;text-align:left!important;}'
-    +'[data-sx-hero] .sxcard{padding:12px 14px!important;border-radius:14px!important;font-size:13px!important;font-weight:700!important;'
-    +'border:1px solid rgba(148,163,184,.28)!important;background:rgba(148,163,184,.08)!important;cursor:pointer!important;'
-    +'transition:transform .25s ease,background .25s ease!important;animation:sxUp .5s both;}'
-    +'[data-sx-hero] .sxcard:hover{transform:translateY(-3px)!important;background:rgba(168,85,247,.14)!important;}'
-    +'[data-sx-hero] .sxmore{margin:14px auto 0!important;display:block!important;padding:10px 22px!important;'
-    +'border-radius:9999px!important;font-size:13px!important;font-weight:800!important;color:#fff!important;cursor:pointer!important;'
-    +'border:0!important;background:linear-gradient(90deg,#a855f7,#ec4899,#f97316)!important;}'
 
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
-
   var st=document.createElement('style');st.setAttribute('data-sx-guard','1');st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
 
@@ -789,84 +760,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
 
 
 
-  /** Replace the upstream "Join Our Community" card with our animated hero. */
-  var PAGE=24;
-  function hero(){
-    try{
-      if(document.querySelector('[data-sx-hero]'))return;
-      var nodes=document.querySelectorAll('div,section,article');
-      var target=null;
-      for(var i=0;i<nodes.length;i++){
-        var t=norm(nodes[i]).toLowerCase();
-        if(t.indexOf('join our community')<0)continue;
-        if(t.length>420)continue;
-        target=nodes[i];
-      }
-      if(!target)return;
-      // climb to the outermost card that still is mostly this section
-      var host=target;
-      for(var k=0;k<4;k++){
-        var p=host.parentElement;
-        if(!p||p.tagName==='BODY')break;
-        if(norm(p).toLowerCase().indexOf('join our community')<0)break;
-        if(norm(p).length>norm(target).length+160)break;
-        host=p;
-      }
-      var wrap=document.createElement('section');
-      wrap.setAttribute('data-sx-hero','1');
-      wrap.innerHTML='<p class="sxh1">Love \u2764\ufe0f from</p>'
-        +'<h2 class="sxh2">SUGANDHNAGAR</h2>'
-        +'<p class="sxsub">Curated batches for JEE, NEET, GATE, CBSE, UPSC and more.</p>'
-        +'<input class="sxsearch" type="search" placeholder="Search batch or teacher..." aria-label="Search batches">'
-        +'<div class="sxgrid"></div>'
-        +'<button class="sxmore" type="button">Load more</button>';
-      host.setAttribute('data-sx-hero-hidden','1');
-      if(host.parentElement)host.parentElement.insertBefore(wrap,host);
-      else document.body.appendChild(wrap);
-
-      // batch list comes from the page's batch <select>, if present
-      var items=[];
-      var sel=document.querySelector('select');
-      if(sel){
-        for(var o=0;o<sel.options.length;o++){
-          var lb=(sel.options[o].textContent||'').trim();
-          if(!lb||/^select/i.test(lb))continue;
-          items.push({label:lb,value:sel.options[o].value});
-        }
-      }
-      var grid=wrap.querySelector('.sxgrid');
-      var more=wrap.querySelector('.sxmore');
-      var input=wrap.querySelector('.sxsearch');
-      var shown=PAGE;
-      function render(){
-        var q=(input.value||'').trim().toLowerCase();
-        var list=items.filter(function(it){return !q||it.label.toLowerCase().indexOf(q)>=0;});
-        var slice=list.slice(0,shown);
-        grid.innerHTML='';
-        slice.forEach(function(it,idx){
-          var c=document.createElement('div');
-          c.className='sxcard';
-          c.textContent=it.label;
-          c.style.animationDelay=Math.min(idx,12)*30+'ms';
-          c.addEventListener('click',function(){
-            if(!sel)return;
-            sel.value=it.value;
-            sel.dispatchEvent(new Event('change',{bubbles:true}));
-            try{sel.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
-          });
-          grid.appendChild(c);
-        });
-        more.style.display=list.length>shown?'block':'none';
-        if(!items.length){grid.style.display='none';input.style.display='none';}
-      }
-      input.addEventListener('input',function(){shown=PAGE;render();});
-      more.addEventListener('click',function(){shown+=PAGE;render();});
-      render();
-    }catch(e){}
-  }
-
   /** Welcome announcement modal - injected, outside the React tree. */
-
   var FEATURES=['Live Classes, all batches','Recorded Lectures, full access',
     'DPP and Notes, download anytime','Quizzes and Test Series',
     'Regular, Infinity, Infinity Pro batches','Fastrack and all other batches',
@@ -945,7 +839,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
   }
 
   var hydrated=false;
-  function tick(){kill();if(hydrated){menu();ui();dock();hero();}}
+  function tick(){kill();if(hydrated){menu();ui();dock();}}
   function ready(){hydrated=true;tick();welcome();}
   if(document.addEventListener){
     document.addEventListener('DOMContentLoaded',tick);
