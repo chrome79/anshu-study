@@ -142,6 +142,9 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
     +'[data-sx-wordmark] img,[data-sx-header] img,[data-sx-brandimg]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;}'
+    +'[data-sx-drawer-logo]{display:block!important;visibility:visible!important;width:34px!important;height:34px!important;'
+    +'min-width:34px!important;border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
+    +'[data-sx-drawer-brand]{display:inline-flex!important;align-items:center!important;gap:10px!important;}'
     +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
