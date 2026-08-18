@@ -498,6 +498,31 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
+      // any leftover "Join telegram" row is gone for good
+      var jt=findRows(/^join\\s*telegram$/i);
+      for(var j2=0;j2<jt.length;j2++)jt[j2].setAttribute('data-sx-menu-hidden','1');
+
+      // Contact us / Developer & maintainer rows point at the right chats
+      var FIX=[[/^join\\s*official\\s*channel$/i,'${JOIN_TELEGRAM}'],
+        [/^contact\\s*owner$/i,'${DEV_TELEGRAM}'],
+        [/^developer$/i,'${DEV_TELEGRAM}'],
+        [/^telegram\\s*bot$/i,'${DEV_TELEGRAM}']];
+      for(var f2=0;f2<FIX.length;f2++){
+        var fr=findRows(FIX[f2][0]),fh=FIX[f2][1];
+        for(var f3=0;f3<fr.length;f3++){
+          var row=fr[f3];
+          if(row.getAttribute('data-sx-fixed')===fh)continue;
+          row.setAttribute('data-sx-fixed',fh);
+          if(row.tagName==='A'){row.setAttribute('href',fh);row.setAttribute('target','_blank');row.setAttribute('rel','noopener');}
+          else{var ia2=row.querySelector('a');if(ia2){ia2.setAttribute('href',fh);ia2.setAttribute('target','_blank');}}
+          row.style.cursor='pointer';
+          (function(h2){row.addEventListener('click',function(ev){
+            ev.preventDefault();ev.stopPropagation();window.open(h2,'_blank','noopener');
+          },true);})(fh);
+        }
+      }
+
+      drawerBrand();
       injectMenuRows();
 
       // brand logo images: hide the one sitting next to the name / in the top bar
