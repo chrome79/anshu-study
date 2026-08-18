@@ -693,47 +693,27 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){return null;}
   }
 
-  /** Our own right-edge toggle: always present, never clipped by upstream layout. */
+  /** Floating right-edge toggle removed: only hide an upstream duplicate. */
   function dock(){
     try{
-      // hide any upstream duplicate so there is never a second pill
       var els=document.querySelectorAll('button,div,a,span');
       for(var i=0;i<els.length;i++){
         var el=els[i];
-        if(el.getAttribute('data-sx-dock')||el.getAttribute('data-sx-dock-upstream'))continue;
+        if(el.getAttribute('data-sx-dock-upstream'))continue;
         var cs=window.getComputedStyle(el);
         if(cs.position!=='fixed')continue;
         var r=el.getBoundingClientRect();
         if(r.width>90||r.height>110||r.width<10||r.height<10)continue;
         if(r.right<window.innerWidth-24)continue;
         var t=norm(el);
-        if(t.length>2&&t.length>0)continue;
+        if(t.length>2)continue;
         if(t&&!/[<>\u2039\u203a\u00ab\u00bb\u27e8\u27e9\u2190\u2192|]/.test(t))continue;
         el.setAttribute('data-sx-dock-upstream','1');
       }
-
-      var btn=document.querySelector('[data-sx-dock]');
-      if(btn&&btn.isConnected)return;
-      btn=document.createElement('button');
-      btn.setAttribute('data-sx-dock','1');
-      btn.setAttribute('type','button');
-      btn.setAttribute('aria-label','Open menu');
-      btn.textContent='\u2039';
-      btn.addEventListener('click',function(ev){
-        ev.preventDefault();ev.stopPropagation();
-        var h=hamburger();
-        if(h){
-          try{h.click();}catch(e2){}
-          var open=btn.getAttribute('data-open')==='1';
-          btn.setAttribute('data-open',open?'0':'1');
-          btn.textContent=open?'\u2039':'\u203a';
-          return;
-        }
-        try{window.scrollTo({top:0,behavior:'smooth'});}catch(e3){window.scrollTo(0,0);}
-      });
-      document.body.appendChild(btn);
     }catch(e){}
   }
+
+
 
 
   /** Welcome announcement modal - injected, outside the React tree. */
