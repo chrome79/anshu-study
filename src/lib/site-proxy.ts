@@ -473,8 +473,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
           var r;try{r=el.getBoundingClientRect();}catch(e0){continue;}
           if(r.top-dr.top>140)continue;
           var fs=parseFloat(getComputedStyle(el).fontSize||'0');
-          var isBrand=/study\\s*x\\s*anshu|studyxanshu|pw|marco|nexa|anshu/i.test(t);
-          if(fs>bestSize&&(isBrand||fs>=16)){bestSize=fs;best=el;}
+          // only ever rewrite the upstream brand text - never a section heading
+          var isBrand=/^(study\\s*x\\s*anshu|studyxanshu|pw[\\s._-]*marco|pw|marco|ua[\\s._-]?nexa|anshu\\s*keshawat)$/i.test(t);
+          if(!isBrand)continue;
+          if(fs>bestSize){bestSize=fs;best=el;}
+
         }
         if(!best)return;
         best.setAttribute('data-sx-drawer-brand','1');
