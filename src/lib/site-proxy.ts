@@ -109,7 +109,7 @@ export function rewriteBranding(input: string): string {
   const urls = protectUrls(out);
   let body = urls.text;
   body = body.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
-  body = body.replace(/PW[\s._-]?MARCO/gi, BRAND);
+  body = body.replace(/PW[\s._-]*MARCO/gi, BRAND);
   body = body.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
   // Bare "marco" in visible copy only - never inside identifiers.
   body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
@@ -130,7 +130,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){try{window[n]=NOOP;}catch(e2){}}
   });
   var css='#marcoAuthDiv,#marcoWelcomeOv,#marcoBrainixPanel{display:none!important;visibility:hidden!important;}'
-    +'[data-sx-popup-killed],[data-sx-menu-hidden]{display:none!important;visibility:hidden!important;}'
+    +'[data-sx-popup-killed],[data-sx-menu-hidden],[data-sx-drawer-brand-original]{display:none!important;visibility:hidden!important;}'
     /* ---- global fit ---- */
     +'html,body{overflow-x:hidden!important;max-width:100vw!important;}'
     +'*{-webkit-tap-highlight-color:transparent;}'
@@ -142,9 +142,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
     +'[data-sx-wordmark] img,[data-sx-header] img,[data-sx-brandimg]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;}'
-    +'[data-sx-drawer-logo]{display:block!important;visibility:visible!important;width:34px!important;height:34px!important;'
+    +'[data-sx-drawer-brand="owned"] [data-sx-drawer-logo]{display:block!important;visibility:visible!important;opacity:1!important;width:34px!important;height:34px!important;'
     +'min-width:34px!important;border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
-    +'[data-sx-drawer-brand]{display:inline-flex!important;align-items:center!important;gap:10px!important;}'
+    +'[data-sx-drawer-brand="owned"]{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:10px!important;'
+    +'width:max-content!important;max-width:100%!important;min-height:38px!important;position:relative!important;z-index:2!important;}'
+    +'[data-sx-drawer-brand="owned"] [data-sx-drawer-text]{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important;font-weight:800!important;}'
     +'[data-sx-xp]{display:none!important;visibility:hidden!important;}'
     /* ---- cards & spacing ---- */
     +'[data-sx-card]{border-radius:16px!important;overflow-wrap:anywhere!important;line-height:1.5!important;}'
