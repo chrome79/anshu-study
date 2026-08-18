@@ -724,51 +724,49 @@ const GUARD_SCRIPT = `<script>(function(){try{
   function welcome(){
     if(window.__sxWelcome)return;
     window.__sxWelcome=true;
-    try{try{sessionStorage.removeItem('sx_welcome_seen');}catch(e){}
+    try{try{if(sessionStorage.getItem('sx_welcome_seen'))return;
+      sessionStorage.setItem('sx_welcome_seen','1');}catch(e){}
       var ov=document.createElement('div');
       ov.setAttribute('data-sx-modal','1');
       ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;'
-        +'justify-content:center;padding:14px;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);'
+        +'justify-content:center;padding:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);'
         +'opacity:0;transition:opacity .25s ease;overscroll-behavior:contain;';
       var card=document.createElement('div');
-      card.style.cssText='position:relative;width:100%;max-width:340px;max-height:82vh;overflow-y:auto;'
-        +'-webkit-overflow-scrolling:touch;border-radius:20px;background:#0d1b1e;'
-        +'border:1px solid rgba(16,185,129,.25);box-shadow:0 25px 60px rgba(0,0,0,.6),0 0 40px rgba(16,185,129,.12);'
-        +'padding:18px 14px 0;color:#e6f4ef;font-family:inherit;transform:scale(.94);transition:transform .25s ease;';
+      card.style.cssText='position:relative;width:100%;max-width:300px;max-height:74vh;overflow-y:auto;'
+        +'-webkit-overflow-scrolling:touch;border-radius:18px;background:#0d1b1e;'
+        +'border:1px solid rgba(16,185,129,.18);box-shadow:0 16px 40px rgba(0,0,0,.45);'
+        +'padding:14px 12px 0;color:#e6f4ef;font-family:inherit;transform:scale(.94);transition:transform .25s ease;';
       var html=''
-        +'<button data-sx-x aria-label="Close" style="position:absolute;top:8px;right:8px;width:28px;height:28px;'
+        +'<button data-sx-x aria-label="Close" style="position:absolute;top:7px;right:7px;width:26px;height:26px;'
         +'border-radius:9999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);'
-        +'color:#e6f4ef;font-size:14px;line-height:1;cursor:pointer;">&#10005;</button>'
-        +'<h2 style="margin:4px 0 8px;text-align:center;font-size:clamp(17px,5vw,22px);font-weight:800;'
-        +'letter-spacing:.5px;color:#34d399;">&#127775;ANSHU KESHAWAT&#127775;</h2>'
-        +'<p style="margin:0;text-align:center;font-size:11.5px;letter-spacing:1px;color:#cbd5e1;font-weight:500;">LOVE &#10084;&#65039; FROM</p>'
-        +'<p style="margin:3px 0 0;text-align:center;font-size:15px;font-weight:800;letter-spacing:2.5px;'
+        +'color:#e6f4ef;font-size:13px;line-height:1;cursor:pointer;">&#10005;</button>'
+        +'<h2 style="margin:2px 0 6px;text-align:center;font-size:clamp(15px,4.4vw,19px);font-weight:800;'
+        +'letter-spacing:.4px;color:#34d399;">&#127775;ANSHU KESHAWAT&#127775;</h2>'
+        +'<p style="margin:0;text-align:center;font-size:10.5px;letter-spacing:1px;color:#cbd5e1;font-weight:500;">LOVE &#10084;&#65039; FROM</p>'
+        +'<p style="margin:2px 0 0;text-align:center;font-size:13px;font-weight:800;letter-spacing:2px;'
         +'background:linear-gradient(90deg,#22d3ee,#fbbf24);-webkit-background-clip:text;background-clip:text;'
         +'color:transparent;">SUGANDHNAGAR</p>'
-        +'<div style="margin:12px 0;padding:10px;border-radius:10px;background:rgba(69,10,10,.45);'
-        +'border:1px solid rgba(239,68,68,.3);color:#fca5a5;text-align:center;font-size:11.5px;font-weight:500;line-height:1.45;">'
+        +'<div style="margin:10px 0;padding:8px;border-radius:9px;background:rgba(69,10,10,.4);'
+        +'border:1px solid rgba(239,68,68,.25);color:#fca5a5;text-align:center;font-size:10.5px;font-weight:500;line-height:1.4;">'
         +'Do NOT purchase this app from anyone. It is 100% FREE always.</div>'
-        +'<h3 style="margin:0 0 8px;font-size:13.5px;font-weight:800;color:#34d399;">What is Available Free</h3>'
-        +'<ul style="margin:0;padding:0 0 0 2px;list-style:none;display:grid;gap:5px;">'
-        +FEATURES.map(function(f){return '<li style="display:flex;gap:7px;font-size:12px;line-height:1.4;color:#d1fae5;">'
+        +'<h3 style="margin:0 0 6px;font-size:12.5px;font-weight:800;color:#34d399;">What is Available Free</h3>'
+        +'<ul style="margin:0;padding:0 0 0 2px;list-style:none;display:grid;gap:4px;">'
+        +FEATURES.map(function(f){return '<li style="display:flex;gap:6px;font-size:11px;line-height:1.35;color:#d1fae5;">'
           +'<span style="color:#34d399;flex:0 0 auto;">&#8211;</span><span>'+f+'</span></li>';}).join('')
         +'</ul>'
-        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:12px 0 8px;'
-        +'padding:11px 14px;border-radius:9999px;text-align:center;font-weight:800;font-size:13px;color:#fff;'
-        +'text-decoration:none;background:linear-gradient(90deg,#ec4899,#f43f5e,#9333ea);'
-        +'box-shadow:0 8px 20px rgba(236,72,153,.3);">Follow Developer on Instagram</a>'
-        +'<a data-sx-cta href="https://t.me/+JzpUpoFpWABlMzM9" target="_blank" rel="noopener" style="display:block;margin:0 0 8px;'
-        +'padding:11px 14px;border-radius:9999px;text-align:center;font-weight:800;font-size:13px;color:#fff;'
-        +'text-decoration:none;background:linear-gradient(90deg,#0ea5e9,#2563eb);'
-        +'box-shadow:0 8px 20px rgba(37,99,235,.3);">Follow on Telegram</a>'
-        +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 12px;'
-        +'padding:11px 14px;border-radius:9999px;text-align:center;font-weight:800;font-size:13px;color:#fff;'
-        +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);'
-        +'box-shadow:0 8px 20px rgba(34,197,94,.3);">Follow on WhatsApp</a>'
-        +'<p data-sx-count style="margin:0 0 8px;text-align:center;font-size:11px;color:#9ca3af;">Auto-closing in 20s</p>'
-        +'<div style="position:sticky;bottom:0;height:4px;background:rgba(255,255,255,.07);border-radius:9999px;overflow:hidden;">'
+        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:10px 0 6px;'
+        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
+        +'text-decoration:none;background:linear-gradient(90deg,#ec4899,#f43f5e,#9333ea);">Follow Developer on Instagram</a>'
+        +'<a data-sx-cta href="https://t.me/+JzpUpoFpWABlMzM9" target="_blank" rel="noopener" style="display:block;margin:0 0 6px;'
+        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
+        +'text-decoration:none;background:linear-gradient(90deg,#0ea5e9,#2563eb);">Follow on Telegram</a>'
+        +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 10px;'
+        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
+        +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);">Follow on WhatsApp</a>'
+        +'<p data-sx-count style="margin:0 0 7px;text-align:center;font-size:10.5px;color:#9ca3af;">Auto-closing in 12s</p>'
+        +'<div style="position:sticky;bottom:0;height:3px;background:rgba(255,255,255,.07);border-radius:9999px;overflow:hidden;">'
         +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;background:#34d399;'
-        +'transition:width 20s linear;"></div></div>';
+        +'transition:width 12s linear;"></div></div>';
 
       card.innerHTML=html;
       ov.appendChild(card);
