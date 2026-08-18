@@ -454,6 +454,56 @@ const GUARD_SCRIPT = `<script>(function(){try{
     else host.appendChild(frag);
   }
 
+  /** Keep the drawer title as our brand, with our logo next to it. */
+  function drawerBrand(){
+    try{
+      var drawer=findDrawer();
+      if(!drawer)return;
+      var host=drawer.querySelector('[data-sx-drawer-brand]');
+      if(!host){
+        // biggest-font short text row near the top of the drawer
+        var cand=drawer.querySelectorAll('h1,h2,h3,p,span,div,a');
+        var dr=drawer.getBoundingClientRect();
+        var best=null,bestSize=0;
+        for(var i=0;i<cand.length;i++){
+          var el=cand[i];
+          var t=norm(el);
+          if(!t||t.length>26)continue;
+          if(el.querySelector('a,button'))continue;
+          var r;try{r=el.getBoundingClientRect();}catch(e0){continue;}
+          if(r.top-dr.top>140)continue;
+          var fs=parseFloat(getComputedStyle(el).fontSize||'0');
+          var isBrand=/study\\s*x\\s*anshu|studyxanshu|pw|marco|nexa|anshu/i.test(t);
+          if(fs>bestSize&&(isBrand||fs>=16)){bestSize=fs;best=el;}
+        }
+        if(!best)return;
+        best.setAttribute('data-sx-drawer-brand','1');
+        host=best;
+      }
+      var txt=host.querySelector('[data-sx-drawer-text]');
+      if(!txt){
+        host.textContent='';
+        var img=document.createElement('img');
+        img.setAttribute('data-sx-drawer-logo','1');
+        img.setAttribute('alt','${BRAND}');
+        img.setAttribute('src','${NEW_LOGO}');
+        host.appendChild(img);
+        txt=document.createElement('span');
+        txt.setAttribute('data-sx-drawer-text','1');
+        txt.style.cssText='white-space:nowrap;font-weight:800;';
+        host.appendChild(txt);
+      }
+      if(txt.textContent!=='${BRAND}')txt.textContent='${BRAND}';
+      var lg=host.querySelector('[data-sx-drawer-logo]');
+      if(lg){
+        if((lg.getAttribute('src')||'').indexOf('${LOGO_ASSET}')<0)lg.setAttribute('src','${NEW_LOGO}');
+        lg.removeAttribute('data-sx-brandimg');
+        lg.style.setProperty('display','block','important');
+        lg.style.setProperty('visibility','visible','important');
+      }
+    }catch(e){}
+  }
+
   function menu(){
     try{
       // dead store links
