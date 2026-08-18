@@ -554,13 +554,16 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
-      // any leftover "Join telegram" row is gone for good
+      // upstream "Join telegram" rows (e.g. inside About developer) stay hidden;
+      // our own injected top-level row carries data-sx-menu-item and is skipped.
       var jt=findRows(/^join\\s*telegram$/i);
       for(var j2=0;j2<jt.length;j2++)jt[j2].setAttribute('data-sx-menu-hidden','1');
 
-      // Contact us / Developer & maintainer rows point at the right chats
+      // Contact us / About us / Developer rows point at the right chats
       var FIX=[[/^join\\s*official\\s*channel$/i,'${JOIN_TELEGRAM}'],
+        [/^join\\s*channel$/i,'${JOIN_TELEGRAM}'],
         [/^contact\\s*owner$/i,'${DEV_TELEGRAM}'],
+        [/^message\\s*on\\s*telegram$/i,'${DEV_TELEGRAM}'],
         [/^developer$/i,'${DEV_TELEGRAM}'],
         [/^telegram\\s*bot$/i,'${DEV_TELEGRAM}']];
       for(var f2=0;f2<FIX.length;f2++){
