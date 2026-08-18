@@ -152,17 +152,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'select{width:100%!important;border-radius:12px!important;border:1px solid rgba(255,255,255,.12)!important;'
     +'padding:10px 12px!important;font-size:14px!important;line-height:1.4!important;appearance:none!important;'
     +'-webkit-appearance:none!important;background-image:none!important;}'
-    /* ---- floating right-edge dock toggle ---- */
-    +'[data-sx-dock]{position:fixed!important;right:0!important;top:50%!important;transform:translateY(-50%)!important;'
-    +'z-index:2147482000!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;'
-    +'display:flex!important;align-items:center!important;justify-content:center!important;'
-    +'min-width:44px!important;min-height:56px!important;width:44px!important;height:56px!important;'
-    +'padding:10px 12px!important;transition:none!important;margin:0!important;'
-    +'background:#000!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;'
-    +'border-right:0!important;border-radius:14px 0 0 14px!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important;'
-    +'font-size:20px!important;line-height:1!important;font-weight:700!important;cursor:pointer!important;'
-    +'clip:auto!important;clip-path:none!important;}'
-    +'[data-sx-dock-upstream]{display:none!important;}'
+    /* ---- floating right-edge toggle: removed, hide any upstream duplicate ---- */
+    +'[data-sx-dock],[data-sx-dock-upstream]{display:none!important;}'
 
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
