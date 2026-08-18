@@ -776,7 +776,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var bar=card.querySelector('[data-sx-bar]');
         if(bar)requestAnimationFrame(function(){bar.style.width='0%';});
       });
-      var left=20,timer=null;
+      var left=12,timer=null;
       var label=card.querySelector('[data-sx-count]');
       function close(){
         if(timer)clearInterval(timer);
