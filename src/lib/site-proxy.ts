@@ -581,6 +581,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
       for(var q=0;q<imgs.length;q++){
         var im=imgs[q];
         if(im.getAttribute('data-sx-logo')||im.getAttribute('data-sx-brandimg'))continue;
+        if(im.getAttribute('data-sx-drawer-logo'))continue;
+        if(im.closest&&im.closest('[data-sx-drawer],[data-sx-drawer-brand]'))continue;
         var src=im.getAttribute('src')||'';
         var alt=im.getAttribute('alt')||'';
         var looksBrand=/i\\.ibb\\.co|1000002876|71696247|anshu|ak-logo|logo|favicon|brand/i.test(src+' '+alt)
