@@ -7,7 +7,7 @@
  *  - the marco-magic-loader script's Login/Sign Up pages and popups are disabled
  */
 
-export const UPSTREAM_ORIGIN = "https://pwmarco.pages.dev";
+export const UPSTREAM_ORIGIN = "https://pwmarco-phi.vercel.app";
 
 export const LOADER_ORIGIN = "https://marco-magic-loader.lovable.app";
 export const LOADER_PATH = "/api/public/loader.js";
@@ -37,7 +37,7 @@ const DEAD_LINK = "https://m-store-chi.vercel.app";
 
 /** Tokens that must survive the branding rewrite (hostnames, attribute names). */
 const PROTECTED = [
-  "pwmarco.pages.dev",
+  "pwmarco-phi.vercel.app",
   "data-pw-marco",
   "pw-marco=",
   "marco-magic-loader",
