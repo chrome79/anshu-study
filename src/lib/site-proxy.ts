@@ -401,6 +401,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
       var area=r.width*r.height;
       if(area<bestArea){bestArea=area;best=el;}
     }
+    if(best)best.setAttribute('data-sx-drawer','1');
     return best;
   }
   /** A real menu row inside the drawer we can clone for styling. */
