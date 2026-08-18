@@ -441,7 +441,6 @@ const GUARD_SCRIPT = `<script>(function(){try{
       return tpl?makeRow(tpl,label,href):scratchRow(label,href);
     };
     var frag=document.createDocumentFragment();
-    frag.appendChild(mk('Join telegram',LINKS['Join telegram']));
     frag.appendChild(mk('Whatsapp channel',LINKS['Whatsapp channel']));
     var head=document.createElement('div');
     head.setAttribute('data-sx-menu-item','About developer');
