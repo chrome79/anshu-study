@@ -442,7 +442,9 @@ const GUARD_SCRIPT = `<script>(function(){try{
       return tpl?makeRow(tpl,label,href):scratchRow(label,href);
     };
     var frag=document.createDocumentFragment();
+    frag.appendChild(mk('Join telegram',LINKS['Join telegram']));
     frag.appendChild(mk('Whatsapp channel',LINKS['Whatsapp channel']));
+
     var head=document.createElement('div');
     head.setAttribute('data-sx-menu-item','About developer');
     head.textContent='About developer';
@@ -473,8 +475,11 @@ const GUARD_SCRIPT = `<script>(function(){try{
           var r;try{r=el.getBoundingClientRect();}catch(e0){continue;}
           if(r.top-dr.top>140)continue;
           var fs=parseFloat(getComputedStyle(el).fontSize||'0');
-          var isBrand=/study\\s*x\\s*anshu|studyxanshu|pw|marco|nexa|anshu/i.test(t);
-          if(fs>bestSize&&(isBrand||fs>=16)){bestSize=fs;best=el;}
+          // only ever rewrite the upstream brand text - never a section heading
+          var isBrand=/^(study\\s*x\\s*anshu|studyxanshu|pw[\\s._-]*marco|pw|marco|ua[\\s._-]?nexa|anshu\\s*keshawat)$/i.test(t);
+          if(!isBrand)continue;
+          if(fs>bestSize){bestSize=fs;best=el;}
+
         }
         if(!best)return;
         best.setAttribute('data-sx-drawer-brand','1');
@@ -549,13 +554,16 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
 
 
-      // any leftover "Join telegram" row is gone for good
+      // upstream "Join telegram" rows (e.g. inside About developer) stay hidden;
+      // our own injected top-level row carries data-sx-menu-item and is skipped.
       var jt=findRows(/^join\\s*telegram$/i);
       for(var j2=0;j2<jt.length;j2++)jt[j2].setAttribute('data-sx-menu-hidden','1');
 
-      // Contact us / Developer & maintainer rows point at the right chats
+      // Contact us / About us / Developer rows point at the right chats
       var FIX=[[/^join\\s*official\\s*channel$/i,'${JOIN_TELEGRAM}'],
+        [/^join\\s*channel$/i,'${JOIN_TELEGRAM}'],
         [/^contact\\s*owner$/i,'${DEV_TELEGRAM}'],
+        [/^message\\s*on\\s*telegram$/i,'${DEV_TELEGRAM}'],
         [/^developer$/i,'${DEV_TELEGRAM}'],
         [/^telegram\\s*bot$/i,'${DEV_TELEGRAM}']];
       for(var f2=0;f2<FIX.length;f2++){
