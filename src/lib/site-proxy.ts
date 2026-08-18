@@ -596,6 +596,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
 
       // Contact us / About us / Developer rows point at the right chats
       var FIX=[[/^join\\s*official\\s*channel$/i,'${JOIN_TELEGRAM}'],
+        [/^join\\s*telegram\\s*channel$/i,'${JOIN_TELEGRAM}'],
         [/^join\\s*channel$/i,'${JOIN_TELEGRAM}'],
         [/^contact\\s*owner$/i,'${DEV_TELEGRAM}'],
         [/^message\\s*on\\s*telegram$/i,'${DEV_TELEGRAM}'],
