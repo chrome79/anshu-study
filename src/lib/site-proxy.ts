@@ -789,7 +789,84 @@ const GUARD_SCRIPT = `<script>(function(){try{
 
 
 
+  /** Replace the upstream "Join Our Community" card with our animated hero. */
+  var PAGE=24;
+  function hero(){
+    try{
+      if(document.querySelector('[data-sx-hero]'))return;
+      var nodes=document.querySelectorAll('div,section,article');
+      var target=null;
+      for(var i=0;i<nodes.length;i++){
+        var t=norm(nodes[i]).toLowerCase();
+        if(t.indexOf('join our community')<0)continue;
+        if(t.length>420)continue;
+        target=nodes[i];
+      }
+      if(!target)return;
+      // climb to the outermost card that still is mostly this section
+      var host=target;
+      for(var k=0;k<4;k++){
+        var p=host.parentElement;
+        if(!p||p.tagName==='BODY')break;
+        if(norm(p).toLowerCase().indexOf('join our community')<0)break;
+        if(norm(p).length>norm(target).length+160)break;
+        host=p;
+      }
+      var wrap=document.createElement('section');
+      wrap.setAttribute('data-sx-hero','1');
+      wrap.innerHTML='<p class="sxh1">Love \u2764\ufe0f from</p>'
+        +'<h2 class="sxh2">SUGANDHNAGAR</h2>'
+        +'<p class="sxsub">Curated batches for JEE, NEET, GATE, CBSE, UPSC and more.</p>'
+        +'<input class="sxsearch" type="search" placeholder="Search batch or teacher..." aria-label="Search batches">'
+        +'<div class="sxgrid"></div>'
+        +'<button class="sxmore" type="button">Load more</button>';
+      host.setAttribute('data-sx-hero-hidden','1');
+      if(host.parentElement)host.parentElement.insertBefore(wrap,host);
+      else document.body.appendChild(wrap);
+
+      // batch list comes from the page's batch <select>, if present
+      var items=[];
+      var sel=document.querySelector('select');
+      if(sel){
+        for(var o=0;o<sel.options.length;o++){
+          var lb=(sel.options[o].textContent||'').trim();
+          if(!lb||/^select/i.test(lb))continue;
+          items.push({label:lb,value:sel.options[o].value});
+        }
+      }
+      var grid=wrap.querySelector('.sxgrid');
+      var more=wrap.querySelector('.sxmore');
+      var input=wrap.querySelector('.sxsearch');
+      var shown=PAGE;
+      function render(){
+        var q=(input.value||'').trim().toLowerCase();
+        var list=items.filter(function(it){return !q||it.label.toLowerCase().indexOf(q)>=0;});
+        var slice=list.slice(0,shown);
+        grid.innerHTML='';
+        slice.forEach(function(it,idx){
+          var c=document.createElement('div');
+          c.className='sxcard';
+          c.textContent=it.label;
+          c.style.animationDelay=Math.min(idx,12)*30+'ms';
+          c.addEventListener('click',function(){
+            if(!sel)return;
+            sel.value=it.value;
+            sel.dispatchEvent(new Event('change',{bubbles:true}));
+            try{sel.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+          });
+          grid.appendChild(c);
+        });
+        more.style.display=list.length>shown?'block':'none';
+        if(!items.length){grid.style.display='none';input.style.display='none';}
+      }
+      input.addEventListener('input',function(){shown=PAGE;render();});
+      more.addEventListener('click',function(){shown+=PAGE;render();});
+      render();
+    }catch(e){}
+  }
+
   /** Welcome announcement modal - injected, outside the React tree. */
+
   var FEATURES=['Live Classes, all batches','Recorded Lectures, full access',
     'DPP and Notes, download anytime','Quizzes and Test Series',
     'Regular, Infinity, Infinity Pro batches','Fastrack and all other batches',
