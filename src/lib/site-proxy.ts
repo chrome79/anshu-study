@@ -156,6 +156,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'-webkit-appearance:none!important;background-image:none!important;}'
     /* ---- floating right-edge toggle: removed, hide any upstream duplicate ---- */
     +'[data-sx-dock],[data-sx-dock-upstream]{display:none!important;}'
+    +'[data-sx-modal] [data-sx-x]:hover{background:rgba(255,255,255,.16)!important;transform:scale(1.08)!important;}'
+    +'[data-sx-modal] a[data-sx-cta]:hover{transform:translateY(-2px)!important;}'
 
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
@@ -762,57 +764,65 @@ const GUARD_SCRIPT = `<script>(function(){try{
 
 
   /** Welcome announcement modal - injected, outside the React tree. */
-  var FEATURES=['Live Classes, all batches','Recorded Lectures, full access',
-    'DPP and Notes, download anytime','Quizzes and Test Series',
-    'Regular, Infinity, Infinity Pro batches','Fastrack and all other batches',
-    'Full Test Series, working','Instant updates, always latest'];
-  function welcome(){
-    if(window.__sxWelcome)return;
-    window.__sxWelcome=true;
-    try{try{if(sessionStorage.getItem('sx_welcome_seen'))return;
-      sessionStorage.setItem('sx_welcome_seen','1');}catch(e){}
+  var WELCOME_KEY='hasSeenWelcomePopup';
+  function showWelcomeModal(){
+    try{
       var ov=document.createElement('div');
       ov.setAttribute('data-sx-modal','1');
       ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;'
-        +'justify-content:center;padding:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);'
-        +'opacity:0;transition:opacity .25s ease;overscroll-behavior:contain;';
+        +'justify-content:center;padding:16px;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);'
+        +'opacity:0;transition:opacity .3s ease;overscroll-behavior:contain;';
       var card=document.createElement('div');
-      card.style.cssText='position:relative;width:100%;max-width:300px;max-height:74vh;overflow-y:auto;'
-        +'-webkit-overflow-scrolling:touch;border-radius:18px;background:#0d1b1e;'
-        +'border:1px solid rgba(16,185,129,.18);box-shadow:0 16px 40px rgba(0,0,0,.45);'
-        +'padding:14px 12px 0;color:#e6f4ef;font-family:inherit;transform:scale(.94);transition:transform .25s ease;';
+      card.style.cssText='position:relative;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;'
+        +'-webkit-overflow-scrolling:touch;border-radius:24px;background:linear-gradient(180deg,#0f172a 0%,#0b1f1a 100%);'
+        +'border:1px solid rgba(16,185,129,.2);box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);'
+        +'padding:22px;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;'
+        +'transform:scale(.92);transition:transform .3s cubic-bezier(.16,1,.3,1);';
       var html=''
-        +'<button data-sx-x aria-label="Close" style="position:absolute;top:7px;right:7px;width:26px;height:26px;'
-        +'border-radius:9999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);'
-        +'color:#e6f4ef;font-size:13px;line-height:1;cursor:pointer;">&#10005;</button>'
-        +'<h2 style="margin:2px 0 6px;text-align:center;font-size:clamp(15px,4.4vw,19px);font-weight:800;'
-        +'letter-spacing:.4px;color:#34d399;">&#127775;ANSHU KESHAWAT&#127775;</h2>'
-        +'<p style="margin:0;text-align:center;font-size:10.5px;letter-spacing:1px;color:#cbd5e1;font-weight:500;">LOVE &#10084;&#65039; FROM</p>'
-        +'<p style="margin:2px 0 0;text-align:center;font-size:13px;font-weight:800;letter-spacing:2px;'
-        +'background:linear-gradient(90deg,#22d3ee,#fbbf24);-webkit-background-clip:text;background-clip:text;'
-        +'color:transparent;">SUGANDHNAGAR</p>'
-        +'<div style="margin:10px 0;padding:8px;border-radius:9px;background:rgba(69,10,10,.4);'
-        +'border:1px solid rgba(239,68,68,.25);color:#fca5a5;text-align:center;font-size:10.5px;font-weight:500;line-height:1.4;">'
+        +'<button data-sx-x aria-label="Close" style="position:absolute;top:14px;right:14px;width:30px;height:30px;'
+        +'border-radius:9999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);'
+        +'color:#e2e8f0;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;'
+        +'transition:background .15s,transform .15s;">&#10005;</button>'
+        +'<div style="text-align:center;margin-top:4px;">'
+        +'<h2 style="margin:0 0 6px;font-size:clamp(18px,5vw,24px);font-weight:800;letter-spacing:.3px;color:#34d399;">'
+        +'&#127775;ANSHU KESHAWAT&#127775;</h2>'
+        +'<p style="margin:0 0 4px;font-size:11px;letter-spacing:1.2px;color:#94a3b8;font-weight:600;">LOVE &#10084;&#65039; FROM</p>'
+        +'<p style="margin:0 0 10px;font-size:14px;font-weight:800;letter-spacing:2px;background:linear-gradient(90deg,#22d3ee,#fbbf24);'
+        +'-webkit-background-clip:text;background-clip:text;color:transparent;">SUGANDHNAGAR</p></div>'
+        +'<div style="margin:0 0 14px;padding:10px 12px;border-radius:12px;background:rgba(220,38,38,.12);'
+        +'border:1px solid rgba(248,113,113,.2);color:#fecaca;font-size:12px;font-weight:600;line-height:1.4;">'
         +'Do NOT purchase this app from anyone. It is 100% FREE always.</div>'
-        +'<h3 style="margin:0 0 6px;font-size:12.5px;font-weight:800;color:#34d399;">What is Available Free</h3>'
-        +'<ul style="margin:0;padding:0 0 0 2px;list-style:none;display:grid;gap:4px;">'
-        +FEATURES.map(function(f){return '<li style="display:flex;gap:6px;font-size:11px;line-height:1.35;color:#d1fae5;">'
-          +'<span style="color:#34d399;flex:0 0 auto;">&#8211;</span><span>'+f+'</span></li>';}).join('')
-        +'</ul>'
-        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:10px 0 6px;'
-        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
-        +'text-decoration:none;background:linear-gradient(90deg,#ec4899,#f43f5e,#9333ea);">Follow Developer on Instagram</a>'
-        +'<a data-sx-cta href="https://t.me/+JzpUpoFpWABlMzM9" target="_blank" rel="noopener" style="display:block;margin:0 0 6px;'
-        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
+        +'<ul style="margin:0 0 16px;padding:0;list-style:none;">'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Live Classes, all batches</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Recorded Lectures, full access</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>DPP and Notes, download anytime</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Quizzes and Test Series</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Regular, Infinity, Infinity Pro batches</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Fastrack and all other batches</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Full Test Series, working</li>'
+        +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
+        +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Instant updates, always latest</li></ul>'
+        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:0 0 8px;'
+        +'padding:12px 16px;border-radius:9999px;text-align:center;font-weight:800;font-size:13px;color:#fff;'
+        +'text-decoration:none;background:linear-gradient(90deg,#ec4899,#f43f5e,#9333ea);box-shadow:0 8px 20px rgba(236,72,153,.25);'
+        +'transition:transform .15s,box-shadow .15s;">Follow Developer on Instagram</a>'
+        +'<a data-sx-cta href="https://t.me/+JzpUpoFpWABlMzM9" target="_blank" rel="noopener" style="display:block;margin:0 0 8px;'
+        +'padding:11px 16px;border-radius:9999px;text-align:center;font-weight:700;font-size:12px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#0ea5e9,#2563eb);">Follow on Telegram</a>'
-        +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 10px;'
-        +'padding:9px 12px;border-radius:9999px;text-align:center;font-weight:800;font-size:12px;color:#fff;'
+        +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 12px;'
+        +'padding:11px 16px;border-radius:9999px;text-align:center;font-weight:700;font-size:12px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);">Follow on WhatsApp</a>'
-        +'<p data-sx-count style="margin:0 0 7px;text-align:center;font-size:10.5px;color:#9ca3af;">Auto-closing in 12s</p>'
-        +'<div style="position:sticky;bottom:0;height:3px;background:rgba(255,255,255,.07);border-radius:9999px;overflow:hidden;">'
+        +'<p data-sx-count style="margin:0 0 8px;text-align:center;font-size:11px;color:#94a3b8;">Auto-closing in 20s</p>'
+        +'<div style="position:sticky;bottom:0;height:4px;background:rgba(255,255,255,.08);border-radius:9999px;overflow:hidden;">'
         +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;background:#34d399;'
-        +'transition:width 12s linear;"></div></div>';
-
+        +'transition:width 20s linear;"></div></div>';
       card.innerHTML=html;
       ov.appendChild(card);
       document.body.appendChild(ov);
@@ -821,12 +831,12 @@ const GUARD_SCRIPT = `<script>(function(){try{
         var bar=card.querySelector('[data-sx-bar]');
         if(bar)requestAnimationFrame(function(){bar.style.width='0%';});
       });
-      var left=12,timer=null;
+      var left=20,timer=null;
       var label=card.querySelector('[data-sx-count]');
       function close(){
         if(timer)clearInterval(timer);
-        ov.style.opacity='0';card.style.transform='scale(.94)';
-        setTimeout(function(){try{ov.remove();}catch(e){}},260);
+        ov.style.opacity='0';card.style.transform='scale(.92)';
+        setTimeout(function(){try{ov.remove();}catch(e){}},300);
       }
       timer=setInterval(function(){
         left--;
@@ -834,9 +844,22 @@ const GUARD_SCRIPT = `<script>(function(){try{
         if(left<=0)close();
       },1000);
       card.querySelector('[data-sx-x]').addEventListener('click',close);
-      ov.addEventListener('click',function(ev){ev.stopPropagation();});
-
+      ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
     }catch(e){}
+  }
+  function welcome(){
+    if(window.__sxWelcomeQueued)return;
+    window.__sxWelcomeQueued=true;
+    try{
+      if(sessionStorage.getItem(WELCOME_KEY))return;
+    }catch(e){}
+    setTimeout(function(){
+      try{
+        if(sessionStorage.getItem(WELCOME_KEY))return;
+        sessionStorage.setItem(WELCOME_KEY,'1');
+        showWelcomeModal();
+      }catch(e){}
+    },20000);
   }
 
   var hydrated=false;
