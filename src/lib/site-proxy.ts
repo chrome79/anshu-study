@@ -854,8 +854,14 @@ const GUARD_SCRIPT = `<script>(function(){try{
   var hydrated=false;
   function tick(){kill();if(hydrated){menu();ui();dock();}}
   function ready(){hydrated=true;tick();welcome();}
+  // Show the welcome modal as soon as <body> is available - no delay.
+  function welcomeNow(){
+    if(document.body)welcome();
+    else setTimeout(welcomeNow,20);
+  }
+  welcomeNow();
   if(document.addEventListener){
-    document.addEventListener('DOMContentLoaded',tick);
+    document.addEventListener('DOMContentLoaded',function(){tick();welcomeNow();});
     window.addEventListener('load',function(){setTimeout(ready,600);});
     setTimeout(ready,2500);
   }
