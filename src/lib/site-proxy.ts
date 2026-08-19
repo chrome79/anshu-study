@@ -852,14 +852,9 @@ const GUARD_SCRIPT = `<script>(function(){try{
     window.__sxWelcomeQueued=true;
     try{
       if(sessionStorage.getItem(WELCOME_KEY))return;
+      sessionStorage.setItem(WELCOME_KEY,'1');
     }catch(e){}
-    setTimeout(function(){
-      try{
-        if(sessionStorage.getItem(WELCOME_KEY))return;
-        sessionStorage.setItem(WELCOME_KEY,'1');
-        showWelcomeModal();
-      }catch(e){}
-    },20000);
+    showWelcomeModal();
   }
 
   var hydrated=false;
