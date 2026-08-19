@@ -809,7 +809,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Full Test Series, working</li>'
         +'<li style="padding:5px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:flex-start;gap:8px;">'
         +'<span style="color:#34d399;font-size:14px;">&#10003;</span>Instant updates, always latest</li></ul>'
-        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:0 0 8px;"
+        +'<a data-sx-cta href="${DEV_INSTAGRAM}" target="_blank" rel="noopener" style="display:block;margin:0 0 8px;'
         +'padding:12px 16px;border-radius:9999px;text-align:center;font-weight:800;font-size:13px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#ec4899,#f43f5e,#9333ea);box-shadow:0 8px 20px rgba(236,72,153,.25);'
         +'transition:transform .15s,box-shadow .15s;">Follow Developer on Instagram</a>'
