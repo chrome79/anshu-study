@@ -819,32 +819,26 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 12px;'
         +'padding:11px 16px;border-radius:9999px;text-align:center;font-weight:700;font-size:12px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);">Follow on WhatsApp</a>'
-        +'<p data-sx-count style="margin:0 0 8px;text-align:center;font-size:11px;color:#94a3b8;">Auto-closing in 20s</p>'
-        +'<div style="position:sticky;bottom:0;height:4px;background:rgba(255,255,255,.08);border-radius:9999px;overflow:hidden;">'
-        +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;background:#34d399;'
-        +'transition:width 20s linear;"></div></div>';
+        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">Tap &#10005; to close</p>';
       card.innerHTML=html;
       ov.appendChild(card);
       document.body.appendChild(ov);
       requestAnimationFrame(function(){
         ov.style.opacity='1';card.style.transform='scale(1)';
-        var bar=card.querySelector('[data-sx-bar]');
-        if(bar)requestAnimationFrame(function(){bar.style.width='0%';});
       });
-      var left=20,timer=null;
-      var label=card.querySelector('[data-sx-count]');
       function close(){
-        if(timer)clearInterval(timer);
         ov.style.opacity='0';card.style.transform='scale(.92)';
         setTimeout(function(){try{ov.remove();}catch(e){}},300);
       }
-      timer=setInterval(function(){
-        left--;
-        if(label)label.textContent='Auto-closing in '+(left>0?left:0)+'s';
-        if(left<=0)close();
-      },1000);
-      card.querySelector('[data-sx-x]').addEventListener('click',close);
-      ov.addEventListener('click',function(ev){if(ev.target===ov)close();});
+      card.querySelector('[data-sx-x]').addEventListener('click',function(ev){
+        ev.preventDefault();ev.stopPropagation();close();
+      });
+      // Block every other interaction from dismissing the modal.
+      ['click','mousedown','mouseup','touchstart','touchend','pointerdown','pointerup'].forEach(function(t){
+        ov.addEventListener(t,function(ev){
+          if(ev.target===ov||ev.target===card){ev.preventDefault();ev.stopPropagation();}
+        },true);
+      });
     }catch(e){}
   }
   function welcome(){
