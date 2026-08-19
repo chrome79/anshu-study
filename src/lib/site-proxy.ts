@@ -156,6 +156,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'-webkit-appearance:none!important;background-image:none!important;}'
     /* ---- floating right-edge toggle: removed, hide any upstream duplicate ---- */
     +'[data-sx-dock],[data-sx-dock-upstream]{display:none!important;}'
+    +'[data-sx-modal] [data-sx-x]:hover{background:rgba(255,255,255,.16)!important;transform:scale(1.08)!important;}'
+    +'[data-sx-modal] a[data-sx-cta]:hover{transform:translateY(-2px)!important;}'
 
     +'@media (max-width:359px){[data-sx-header]{padding:6px 12px!important;gap:6px!important;}}'
     +'@media (min-width:768px){[data-sx-header]{padding:10px 24px!important;}}';
