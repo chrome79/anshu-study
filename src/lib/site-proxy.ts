@@ -481,62 +481,17 @@ const GUARD_SCRIPT = `<script>(function(){try{
     }catch(e){}
   }
 
-  /** Own brand block (logo + STUDYxANSHU) pinned at the top of the drawer. */
+  /** Removed by request: no custom brand block/logo inside the drawer. */
   function drawerBrand(){
     try{
-      var drawer=findDrawer();
-      if(!drawer){
-        // drawer closed: drop stale blocks so a remount gets a fresh one
-        var stale=document.querySelectorAll('[data-sx-drawer-brand="owned"]');
-        for(var s=0;s<stale.length;s++){
-          if(!stale[s].closest('[data-sx-drawer]')&&stale[s].parentElement)
-            stale[s].parentElement.removeChild(stale[s]);
-        }
-        return;
-      }
-      // hide the upstream brand row (topmost short text that looks like old branding)
-      var cand=drawer.querySelectorAll('h1,h2,h3,h4,p,span,div,a');
-      for(var i=0;i<cand.length;i++){
-        var el=cand[i];
-        if(el.closest('[data-sx-drawer-brand="owned"]'))continue;
-        if(el.querySelector('a,button,input'))continue;
-        var t=(el.textContent||'').replace(/\\s+/g,' ').trim();
-        if(!t||t.length>24)continue;
-        if(!oldBrandText(t))continue;
-        el.setAttribute('data-sx-drawer-brand-original','1');
-      }
-      // keep exactly one owned block, inside the current drawer
       var owned=document.querySelectorAll('[data-sx-drawer-brand="owned"]');
-      var mine=null;
-      for(var j=0;j<owned.length;j++){
-        if(drawer.contains(owned[j])&&!mine)mine=owned[j];
-        else if(owned[j].parentElement)owned[j].parentElement.removeChild(owned[j]);
+      for(var i=0;i<owned.length;i++){
+        if(owned[i].parentElement)owned[i].parentElement.removeChild(owned[i]);
       }
-      if(!mine){
-        mine=document.createElement('div');
-        mine.setAttribute('data-sx-drawer-brand','owned');
-        var img=document.createElement('img');
-        img.setAttribute('data-sx-drawer-logo','1');
-        img.setAttribute('alt','');
-        img.setAttribute('src','${NEW_LOGO}');
-        img.onerror=function(){ if(this.getAttribute('src')!=='${LOGO_ASSET}')this.setAttribute('src','${LOGO_ASSET}'); };
-        var txt=document.createElement('span');
-        txt.setAttribute('data-sx-drawer-text','1');
-        txt.textContent='${BRAND}';
-        mine.appendChild(img);
-        mine.appendChild(txt);
-        mine.style.cssText='padding:14px 16px 10px;font-size:16px;';
-        if(drawer.firstChild)drawer.insertBefore(mine,drawer.firstChild);
-        else drawer.appendChild(mine);
-      }
-      var lg=mine.querySelector('[data-sx-drawer-logo]');
-      if(lg&&lg.getAttribute('src')!=='${NEW_LOGO}'&&lg.getAttribute('src')!=='${LOGO_ASSET}')
-        lg.setAttribute('src','${NEW_LOGO}');
-      var tn=mine.querySelector('[data-sx-drawer-text]');
-      if(tn&&tn.textContent!=='${BRAND}')tn.textContent='${BRAND}';
+      var orig=document.querySelectorAll('[data-sx-drawer-brand-original]');
+      for(var j=0;j<orig.length;j++)orig[j].removeAttribute('data-sx-drawer-brand-original');
     }catch(e){}
   }
-
 
 
   function menu(){
