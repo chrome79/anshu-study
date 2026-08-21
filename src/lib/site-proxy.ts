@@ -7,7 +7,7 @@
  *  - the marco-magic-loader script's Login/Sign Up pages and popups are disabled
  */
 
-export const UPSTREAM_ORIGIN = "https://pwmarco-phi.vercel.app";
+export const UPSTREAM_ORIGIN = "https://lite-pwmarco.pages.dev";
 
 export const LOADER_ORIGIN = "https://marco-magic-loader.lovable.app";
 export const LOADER_PATH = "/api/public/loader.js";
