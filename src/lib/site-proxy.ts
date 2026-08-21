@@ -243,7 +243,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         try{u=new URL(src,location.href);}catch(e){continue;}
         var abs=u.href;
         if(VIDEOISH.test(abs)){armPlayer(f,abs);continue;}
-        var self=u.hostname===location.hostname||/pwmarco\\.pages\\.dev/i.test(u.hostname);
+        var self=u.hostname===location.hostname||/pwmarco[\\w.-]*\\.(pages\\.dev|vercel\\.app)/i.test(u.hostname);
         if(!self)continue;
         // Only unwrap a frame that loads this very same page (infinite nesting).
         if(u.pathname===location.pathname){
