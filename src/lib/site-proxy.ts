@@ -779,13 +779,25 @@ const GUARD_SCRIPT = `<script>(function(){try{
       requestAnimationFrame(function(){
         ov.style.opacity='1';card.style.transform='scale(1)';
       });
+      var timer=null;
       function close(){
+        if(timer){clearInterval(timer);timer=null;}
         ov.style.opacity='0';card.style.transform='scale(.92)';
         setTimeout(function(){try{ov.remove();}catch(e){}},300);
       }
       card.querySelector('[data-sx-x]').addEventListener('click',function(ev){
         ev.preventDefault();ev.stopPropagation();close();
       });
+      // Visible 20s countdown + draining progress bar.
+      var left=20;
+      var countEl=card.querySelector('[data-sx-count]');
+      var barEl=card.querySelector('[data-sx-bar]');
+      timer=setInterval(function(){
+        left--;
+        if(countEl)countEl.textContent=String(left>0?left:0);
+        if(barEl)barEl.style.width=(Math.max(left,0)/20*100)+'%';
+        if(left<=0)close();
+      },1000);
       // Block every other interaction from dismissing the modal.
       ['click','mousedown','mouseup','touchstart','touchend','pointerdown','pointerup'].forEach(function(t){
         ov.addEventListener(t,function(ev){
