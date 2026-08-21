@@ -17,9 +17,10 @@ export const LAYOUT_URL =
 const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const OLD_LOGO_2 = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
 /** Single canonical branding asset. The version query busts client caches. */
-const LOGO_ASSET =
+const LOGO_ASSET = "/brand-logo.jpg";
+const NEW_LOGO = `${LOGO_ASSET}?v=logo_v3`;
+const OLD_ASSET_LOGO_3 =
   "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
-const NEW_LOGO = `${LOGO_ASSET}?v=logo_v2`;
 const OLD_ASSET_LOGO = "/__l5e/assets-v1/177cb398-ccee-45ab-b175-857cbd8b6f24/ak-logo.png";
 const OLD_ASSET_LOGO_2 =
   "/__l5e/assets-v1/f1a28b72-aaad-41c7-bc31-71c5dec7ebc0/anshu_keshawat_logo_v1_canonical.png";
@@ -93,6 +94,7 @@ export function rewriteBranding(input: string): string {
   out = out.split(OLD_LOGO_2).join(NEW_LOGO);
   out = out.split(OLD_ASSET_LOGO).join(NEW_LOGO);
   out = out.split(OLD_ASSET_LOGO_2).join(LOGO_ASSET);
+  out = out.split(OLD_ASSET_LOGO_3).join(LOGO_ASSET);
 
   // 2. Old developer handles -> new Telegram
   out = out.replace(
@@ -770,9 +772,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<div style="margin:0 0 6px;height:4px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden;">'
         +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;'
         +'background:linear-gradient(90deg,#34d399,#22d3ee);transition:width 1s linear;"></div></div>'
-        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">'
-        +'Auto closing in <span data-sx-count style="color:#34d399;font-weight:800;">20</span>s'
-        +' &#183; Tap &#10005; to close</p>';
+        +'<p style="margin:0;text-align:center;font-size:12px;color:#94a3b8;font-weight:600;letter-spacing:.3px;">'
+        +'Auto closing in <span data-sx-count style="color:#34d399;font-weight:800;font-variant-numeric:tabular-nums;">00:20</span></p>';
       card.innerHTML=html;
       ov.appendChild(card);
       document.body.appendChild(ov);
@@ -789,12 +790,15 @@ const GUARD_SCRIPT = `<script>(function(){try{
         ev.preventDefault();ev.stopPropagation();close();
       });
       // Visible 20s countdown + draining progress bar.
-      var left=20;
+      var TOTAL=20;
+      var left=TOTAL;
       var countEl=card.querySelector('[data-sx-count]');
       var barEl=card.querySelector('[data-sx-bar]');
+      function fmt(n){n=n>0?n:0;return '00:'+(n<10?'0':'')+n;}
+      if(countEl)countEl.textContent=fmt(left);
       timer=setInterval(function(){
         left--;
-        if(countEl)countEl.textContent=String(left>0?left:0);
+        if(countEl)countEl.textContent=fmt(left);
         if(barEl)barEl.style.width=(Math.max(left,0)/20*100)+'%';
         if(left<=0)close();
       },1000);
