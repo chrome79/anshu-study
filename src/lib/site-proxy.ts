@@ -37,7 +37,7 @@ const DEAD_LINK = "https://m-store-chi.vercel.app";
 
 /** Tokens that must survive the branding rewrite (hostnames, attribute names). */
 const PROTECTED = [
-  "pwmarco-phi.vercel.app",
+  "lite-pwmarco.pages.dev",
   "data-pw-marco",
   "pw-marco=",
   "marco-magic-loader",
