@@ -7,7 +7,7 @@
  *  - the marco-magic-loader script's Login/Sign Up pages and popups are disabled
  */
 
-export const UPSTREAM_ORIGIN = "https://pwmarco-phi.vercel.app";
+export const UPSTREAM_ORIGIN = "https://lite-pwmarco.pages.dev";
 
 export const LOADER_ORIGIN = "https://marco-magic-loader.lovable.app";
 export const LOADER_PATH = "/api/public/loader.js";
@@ -37,7 +37,7 @@ const DEAD_LINK = "https://m-store-chi.vercel.app";
 
 /** Tokens that must survive the branding rewrite (hostnames, attribute names). */
 const PROTECTED = [
-  "pwmarco-phi.vercel.app",
+  "lite-pwmarco.pages.dev",
   "data-pw-marco",
   "pw-marco=",
   "marco-magic-loader",
@@ -243,7 +243,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
         try{u=new URL(src,location.href);}catch(e){continue;}
         var abs=u.href;
         if(VIDEOISH.test(abs)){armPlayer(f,abs);continue;}
-        var self=u.hostname===location.hostname||/pwmarco\\.pages\\.dev/i.test(u.hostname);
+        var self=u.hostname===location.hostname||/pwmarco[\\w.-]*\\.(pages\\.dev|vercel\\.app)/i.test(u.hostname);
         if(!self)continue;
         // Only unwrap a frame that loads this very same page (infinite nesting).
         if(u.pathname===location.pathname){
@@ -472,7 +472,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
       while((node=walker.nextNode())){
         var parent=node.parentElement;
         if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/i.test(parent.tagName))continue;
-        if(parent.closest&&parent.closest('[data-sx-drawer-brand="owned"]'))continue;
+        if(parent.closest&&parent.closest('[data-sx-drawer],[data-sx-drawer-brand="owned"]'))continue;
         var value=node.nodeValue||'';
         var next=value.replace(/PW[\s._-]*MARCO/gi,'${BRAND}')
           .replace(/(^|[^\w\/.\-])MARCO(?=$|[^\w\/.\-])/gi,'$1${DEV_NAME}');
@@ -767,20 +767,37 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 12px;'
         +'padding:11px 16px;border-radius:9999px;text-align:center;font-weight:700;font-size:12px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);">Follow on WhatsApp</a>'
-        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">Tap &#10005; to close</p>';
+        +'<div style="margin:0 0 6px;height:4px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden;">'
+        +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;'
+        +'background:linear-gradient(90deg,#34d399,#22d3ee);transition:width 1s linear;"></div></div>'
+        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">'
+        +'Auto closing in <span data-sx-count style="color:#34d399;font-weight:800;">20</span>s'
+        +' &#183; Tap &#10005; to close</p>';
       card.innerHTML=html;
       ov.appendChild(card);
       document.body.appendChild(ov);
       requestAnimationFrame(function(){
         ov.style.opacity='1';card.style.transform='scale(1)';
       });
+      var timer=null;
       function close(){
+        if(timer){clearInterval(timer);timer=null;}
         ov.style.opacity='0';card.style.transform='scale(.92)';
         setTimeout(function(){try{ov.remove();}catch(e){}},300);
       }
       card.querySelector('[data-sx-x]').addEventListener('click',function(ev){
         ev.preventDefault();ev.stopPropagation();close();
       });
+      // Visible 20s countdown + draining progress bar.
+      var left=20;
+      var countEl=card.querySelector('[data-sx-count]');
+      var barEl=card.querySelector('[data-sx-bar]');
+      timer=setInterval(function(){
+        left--;
+        if(countEl)countEl.textContent=String(left>0?left:0);
+        if(barEl)barEl.style.width=(Math.max(left,0)/20*100)+'%';
+        if(left<=0)close();
+      },1000);
       // Block every other interaction from dismissing the modal.
       ['click','mousedown','mouseup','touchstart','touchend','pointerdown','pointerup'].forEach(function(t){
         ov.addEventListener(t,function(ev){
