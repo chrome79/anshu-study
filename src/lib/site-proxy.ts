@@ -472,7 +472,7 @@ const GUARD_SCRIPT = `<script>(function(){try{
       while((node=walker.nextNode())){
         var parent=node.parentElement;
         if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/i.test(parent.tagName))continue;
-        if(parent.closest&&parent.closest('[data-sx-drawer-brand="owned"]'))continue;
+        if(parent.closest&&parent.closest('[data-sx-drawer],[data-sx-drawer-brand="owned"]'))continue;
         var value=node.nodeValue||'';
         var next=value.replace(/PW[\s._-]*MARCO/gi,'${BRAND}')
           .replace(/(^|[^\w\/.\-])MARCO(?=$|[^\w\/.\-])/gi,'$1${DEV_NAME}');
