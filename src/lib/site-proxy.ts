@@ -767,7 +767,12 @@ const GUARD_SCRIPT = `<script>(function(){try{
         +'<a data-sx-cta href="https://whatsapp.com/channel/0029VbCvhNqGZNCp0sKLUk3G" target="_blank" rel="noopener" style="display:block;margin:0 0 12px;'
         +'padding:11px 16px;border-radius:9999px;text-align:center;font-weight:700;font-size:12px;color:#fff;'
         +'text-decoration:none;background:linear-gradient(90deg,#22c55e,#16a34a);">Follow on WhatsApp</a>'
-        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">Tap &#10005; to close</p>';
+        +'<div style="margin:0 0 6px;height:4px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden;">'
+        +'<div data-sx-bar style="height:100%;width:100%;border-radius:9999px;'
+        +'background:linear-gradient(90deg,#34d399,#22d3ee);transition:width 1s linear;"></div></div>'
+        +'<p style="margin:0;text-align:center;font-size:11px;color:#94a3b8;">'
+        +'Auto closing in <span data-sx-count style="color:#34d399;font-weight:800;">20</span>s'
+        +' &#183; Tap &#10005; to close</p>';
       card.innerHTML=html;
       ov.appendChild(card);
       document.body.appendChild(ov);
