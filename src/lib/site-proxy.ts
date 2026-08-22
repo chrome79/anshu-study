@@ -16,9 +16,10 @@ export const LAYOUT_URL =
 
 const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const OLD_LOGO_2 = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
-/** Single canonical branding asset. The version query busts client caches. */
-const LOGO_ASSET = "/brand-logo.jpg";
-const NEW_LOGO = `${LOGO_ASSET}?v=logo_v3`;
+/** Immutable CDN asset: unlike a proxied /public path, this also resolves in production. */
+const LOGO_ASSET =
+  "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
+const NEW_LOGO = LOGO_ASSET;
 const OLD_ASSET_LOGO_3 =
   "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
 const OLD_ASSET_LOGO = "/__l5e/assets-v1/177cb398-ccee-45ab-b175-857cbd8b6f24/ak-logo.png";
@@ -112,9 +113,9 @@ export function rewriteBranding(input: string): string {
   let body = urls.text;
   body = body.replace(/@?official_?marco_?22/gi, "t.me/Liee070");
   body = body.replace(/PW[\s._-]*MARCO/gi, BRAND);
-  body = body.replace(/Powered\s+by\s+Marco/gi, `Powered by ${DEV_NAME}`);
+  body = body.replace(/Powered\s+by\s+Marco/gi, "Powered by ANSHU");
   // Bare "marco" in visible copy only - never inside identifiers.
-  body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, DEV_NAME);
+  body = body.replace(/(?<![\w\/.\-])marco(?![\w\/.\-])/gi, "ANSHU");
   out = urls.restore(body);
 
   return restore(out);
@@ -144,8 +145,8 @@ const GUARD_SCRIPT = `<script>(function(){try{
     +'[data-sx-wordmark]{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:0!important;'
     +'font-size:clamp(13px,4.2vw,19px)!important;font-weight:800!important;letter-spacing:.4px!important;line-height:1.1!important;}'
     +'[data-sx-wordmark] img,[data-sx-header] img,[data-sx-brandimg]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;}'
-    +'[data-sx-drawer-brand="owned"] [data-sx-drawer-logo]{display:block!important;visibility:visible!important;opacity:1!important;width:34px!important;height:34px!important;'
-    +'min-width:34px!important;border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
+    +'[data-sx-drawer-logo]{display:block!important;visibility:visible!important;opacity:1!important;width:48px!important;height:48px!important;'
+    +'min-width:48px!important;border-radius:50%!important;object-fit:cover!important;flex:0 0 auto!important;}'
     +'[data-sx-drawer-brand="owned"]{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;gap:10px!important;'
     +'width:max-content!important;max-width:100%!important;min-height:38px!important;position:relative!important;z-index:2!important;}'
     +'[data-sx-drawer-brand="owned"] [data-sx-drawer-text]{display:inline!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important;font-weight:800!important;}'
@@ -474,16 +475,15 @@ const GUARD_SCRIPT = `<script>(function(){try{
       while((node=walker.nextNode())){
         var parent=node.parentElement;
         if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/i.test(parent.tagName))continue;
-        if(parent.closest&&parent.closest('[data-sx-drawer],[data-sx-drawer-brand="owned"]'))continue;
         var value=node.nodeValue||'';
         var next=value.replace(/PW[\s._-]*MARCO/gi,'${BRAND}')
-          .replace(/(^|[^\w\/.\-])MARCO(?=$|[^\w\/.\-])/gi,'$1${DEV_NAME}');
+          .replace(/(^|[^\w\/.\-])MARCO(?=$|[^\w\/.\-])/gi,'$1ANSHU');
         if(next!==value)node.nodeValue=next;
       }
     }catch(e){}
   }
 
-  /** Removed by request: no custom brand block/logo inside the drawer. */
+  /** Keep the upstream drawer layout, but permanently bind its brand image to our CDN logo. */
   function drawerBrand(){
     try{
       var owned=document.querySelectorAll('[data-sx-drawer-brand="owned"]');
@@ -492,6 +492,32 @@ const GUARD_SCRIPT = `<script>(function(){try{
       }
       var orig=document.querySelectorAll('[data-sx-drawer-brand-original]');
       for(var j=0;j<orig.length;j++)orig[j].removeAttribute('data-sx-drawer-brand-original');
+      var drawer=findDrawer();if(!drawer)return;
+      var title=null,nodes=drawer.querySelectorAll('span,p,div,h1,h2,h3,strong');
+      for(var k=0;k<nodes.length;k++){
+        var label=norm(nodes[k]);
+        if(/^(?:study\s*x\s*anshu|pw[\s._-]*marco)$/i.test(label)){title=nodes[k];break;}
+      }
+      if(!title)return;
+      setLabel(title,'${BRAND}');
+      var row=title.parentElement||title;
+      for(var up=0;up<3&&row.parentElement;up++){
+        var rr=row.getBoundingClientRect();
+        if(rr.width>180&&rr.height>=44&&rr.height<=110)break;
+        row=row.parentElement;
+      }
+      var logo=row.querySelector('img');
+      if(!logo){
+        logo=document.createElement('img');
+        logo.setAttribute('alt','STUDYxANSHU logo');
+        row.insertBefore(logo,row.firstChild);
+      }
+      logo.removeAttribute('data-sx-brandimg');
+      logo.setAttribute('data-sx-drawer-logo','1');
+      if(logo.getAttribute('src')!=='${NEW_LOGO}')logo.setAttribute('src','${NEW_LOGO}');
+      logo.style.setProperty('display','block','important');
+      logo.style.setProperty('visibility','visible','important');
+      logo.style.setProperty('opacity','1','important');
     }catch(e){}
   }
 
