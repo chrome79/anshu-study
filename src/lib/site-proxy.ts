@@ -16,10 +16,9 @@ export const LAYOUT_URL =
 
 const OLD_LOGO = "https://i.ibb.co/PZThbjmf/1000002876-removebg-preview-2.png";
 const OLD_LOGO_2 = "https://i.ibb.co/BKQM1dSs/71696247-c72a-491e-9b18-4d0e3d23c905.jpg";
-/** Immutable CDN asset: unlike a proxied /public path, this also resolves in production. */
-const LOGO_ASSET =
-  "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
-const NEW_LOGO = LOGO_ASSET;
+/** Logo ships inline (data URI) so it can never 404 on the live domain. */
+const LOGO_ASSET = BRAND_LOGO_DATA_URI;
+const NEW_LOGO = BRAND_LOGO_DATA_URI;
 const OLD_ASSET_LOGO_3 =
   "/__l5e/assets-v1/0b229c46-b19c-4bbd-9cbf-de4ee445475d/anshu_logo_v2.jpg";
 const OLD_ASSET_LOGO = "/__l5e/assets-v1/177cb398-ccee-45ab-b175-857cbd8b6f24/ak-logo.png";
