@@ -7,6 +7,8 @@
  *  - the marco-magic-loader script's Login/Sign Up pages and popups are disabled
  */
 
+import { BRAND_LOGO_DATA_URI } from "./brand-logo";
+
 export const UPSTREAM_ORIGIN = "https://lite-pwmarco.pages.dev";
 
 export const LOADER_ORIGIN = "https://marco-magic-loader.lovable.app";
