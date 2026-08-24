@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as LectureIdRouteImport } from './routes/lecture.$id'
+import { Route as StudyBatchesRouteImport } from './routes/study.batches'
+import { Route as StudyBatchIdRouteImport } from './routes/study.batch.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +27,98 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LectureIdRoute = LectureIdRouteImport.update({
+  id: '/lecture/$id',
+  path: '/lecture/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyBatchesRoute = StudyBatchesRouteImport.update({
+  id: '/study/batches',
+  path: '/study/batches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyBatchIdRoute = StudyBatchIdRouteImport.update({
+  id: '/study/batch/$id',
+  path: '/study/batch/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/lecture/$id': typeof LectureIdRoute
+  '/study/batches': typeof StudyBatchesRoute
+  '/study/batch/$id': typeof StudyBatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/lecture/$id': typeof LectureIdRoute
+  '/study/batches': typeof StudyBatchesRoute
+  '/study/batch/$id': typeof StudyBatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/lecture/$id': typeof LectureIdRoute
+  '/study/batches': typeof StudyBatchesRoute
+  '/study/batch/$id': typeof StudyBatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/contact'
+    | '/lecture/$id'
+    | '/study/batches'
+    | '/study/batch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$'
-  id: '__root__' | '/' | '/$'
+  to:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/contact'
+    | '/lecture/$id'
+    | '/study/batches'
+    | '/study/batch/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/about'
+    | '/contact'
+    | '/lecture/$id'
+    | '/study/batches'
+    | '/study/batch/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
+  LectureIdRoute: typeof LectureIdRoute
+  StudyBatchesRoute: typeof StudyBatchesRoute
+  StudyBatchIdRoute: typeof StudyBatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +137,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lecture/$id': {
+      id: '/lecture/$id'
+      path: '/lecture/$id'
+      fullPath: '/lecture/$id'
+      preLoaderRoute: typeof LectureIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study/batches': {
+      id: '/study/batches'
+      path: '/study/batches'
+      fullPath: '/study/batches'
+      preLoaderRoute: typeof StudyBatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study/batch/$id': {
+      id: '/study/batch/$id'
+      path: '/study/batch/$id'
+      fullPath: '/study/batch/$id'
+      preLoaderRoute: typeof StudyBatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
+  LectureIdRoute: LectureIdRoute,
+  StudyBatchesRoute: StudyBatchesRoute,
+  StudyBatchIdRoute: StudyBatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
